@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地理知识库</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden; /* 禁止滚动 */
+            scroll-behavior: auto;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        .landing-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+        }
+
+        /* 背景图片 */
+        .landing-bg-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* 背景视频 */
+        .landing-bg-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        /* 视频加载状态 */
+        .video-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.5rem;
+            z-index: 5;
+            display: none;
+        }
+
+        .video-loading.show {
+            display: block;
+        }
+
+        /* 视频加载失败占位符 */
+        .video-error-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3a5f, #2563eb);
+            z-index: 1;
+        }
+
+        /* 遮罩层 */
+        .landing-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(30, 58, 95, 0.7) 0%, rgba(37, 99, 235, 0.5) 100%);
+        }
+
+        /* 内容 */
+        .landing-content {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        /* 互动框样式 - 默认隐藏 */
+        .door-container {
+            position: absolute;
+            cursor: pointer;
+            width: 200px;
+            height: 120px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 12px;
+            opacity: 0;
+            transition: opacity 0.3s, box-shadow 0.3s;
+        }
+
+        .door-container:hover {
+            opacity: 1;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.8);
+        }
+
+        .door {
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(255,255,255,0.6);
+            border-radius: 12px;
+        }
+
+        /* 底部提示文字 */
+        .bottom-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        /* 管理员设置按钮 */
+        .admin-settings-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10001;
+            padding: 0.6rem 1.2rem;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-radius: 30px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            display: none;
+        }
+
+        .admin-settings-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* 设置弹窗 */
+        .settings-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 10002;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-modal.show {
+            display: flex;
+        }
+
+        .settings-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .settings-header h3 {
+            color: #1e3a5f;
+            font-size: 1.3rem;
+        }
+
+        .settings-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: #f3f4f6;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .settings-close:hover {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .settings-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-section label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .settings-section input[type="text"] {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .settings-section input[type="text"]:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .settings-section input[type="url"] {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .settings-section input[type="url"]:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .settings-section select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .bg-type-toggle {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .bg-type-btn {
+            flex: 1;
+            padding: 0.8rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .bg-type-btn.active {
+            border-color: #2563eb;
+            background: rgba(37, 99, 235, 0.1);
+            color: #2563eb;
+        }
+
+        .settings-section p {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+
+        .settings-save {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .settings-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        .preview-container {
+            margin-top: 1rem;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f3f4f6;
+        }
+
+        .preview-container img {
+            width: 100%;
+            max-height: 150px;
+            object-fit: cover;
+        }
+
+        .preview-container video {
+            width: 100%;
+            max-height: 150px;
+        }
+
+        /* 视频预览占位 */
+        .video-placeholder {
+            height: 150px;
+            background: #1e3a5f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        /* 拖拽提示 */
+        .drop-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(37, 99, 235, 0.95);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: white;
+            font-size: 4rem;
+        }
+
+        .drop-overlay.show {
+            display: flex;
+        }
+
+        .drop-overlay p {
+            margin-top: 1rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* 管理员拖拽提示条 */
+        .admin-drop-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.95);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            color: #1e3a5f;
+            font-weight: 600;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            z-index: 10001;
+            display: none;
+            white-space: nowrap;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        /* 设置面板的拖拽上传区 */
+        .drop-zone {
+            border: 3px dashed #e5e7eb;
+            border-radius: 12px;
+            padding: 2.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f9fafb;
+            margin-bottom: 1rem;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: #2563eb;
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .drop-zone-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .drop-zone-text {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        .drop-zone-hint {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .or-divider {
+            text-align: center;
+            color: #9ca3af;
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .or-divider::before, .or-divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .or-divider::before { left: 0; }
+        .or-divider::after { right: 0; }
+    </style>
+</head>
+<body>
+    <div class="landing-page" id="landingPage">
+        <!-- 背景 -->
+        <div class="landing-bg-image" id="bgImage"></div>
+        <div class="video-error-placeholder" id="videoPlaceholder" style="display: none;"></div>
+        <video class="landing-bg-video" id="bgVideo" autoplay loop muted playsinline style="display: none;" oncanplay="videoLoaded()" onerror="videoFailed()"></video>
+        <div class="video-loading" id="videoLoading">⏳ 视频加载中...</div>
+        <div class="landing-overlay"></div>
+
+        <!-- 内容 -->
+        <div class="landing-content">
+            <div class="door-container" id="doorBtn" onclick="enterSite()">
+                <div class="door"></div>
+            </div>
+        </div>
+
+        <!-- 底部提示 -->
+        <div class="bottom-hint">靠近并点击门了解详情</div>
+    </div>
+
+    <!-- 管理员设置按钮 -->
+    <button class="admin-settings-btn" id="adminSettingsBtn" onclick="openSettings()">
+        ⚙️ 首页设置
+    </button>
+
+    <!-- 管理员拖拽提示 -->
+    <div class="admin-drop-hint" id="adminDropHint">
+        📷 拖拽图片/视频到此处即可设为背景 | 或 Ctrl+V 粘贴
+    </div>
+
+    <!-- 设置弹窗 -->
+    <div class="settings-modal" id="settingsModal">
+        <div class="settings-content">
+            <div class="settings-header">
+                <h3>🖼️ 首页背景设置</h3>
+                <button class="settings-close" onclick="closeSettings()">×</button>
+            </div>
+
+            <div class="settings-section">
+                <label>背景类型</label>
+                <div class="bg-type-toggle">
+                    <button type="button" class="bg-type-btn active" data-type="image" onclick="setBgType('image')">📷 图片</button>
+                    <button type="button" class="bg-type-btn" data-type="video" onclick="setBgType('video')">🎬 视频</button>
+                </div>
+            </div>
+
+            <div class="settings-section" id="imageSection">
+                <div class="drop-zone" id="imageDropZone" ondrop="handleDrop(event, 'image')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('imageFileInput').click()">
+                    <div class="drop-zone-icon">📷</div>
+                    <div class="drop-zone-text">拖拽图片到此处 或 点击选择文件</div>
+                    <div class="drop-zone-hint">或直接粘贴截图 Ctrl+V</div>
+                </div>
+                <input type="file" id="imageFileInput" accept="image/*" style="display:none" onchange="handleFileSelect(event, 'image')">
+                <div class="or-divider">或输入 URL</div>
+                <input type="url" id="bgImageUrl" placeholder="输入图片地址，如 https://..." onchange="previewImage()">
+                <p>支持 JPG、PNG、WebP 等图片格式</p>
+                <div class="preview-container" id="imagePreview"></div>
+            </div>
+
+            <div class="settings-section" id="videoSection" style="display: none;">
+                <div class="drop-zone" id="videoDropZone" ondrop="handleDrop(event, 'video')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('videoFileInput').click()">
+                    <div class="drop-zone-icon">🎬</div>
+                    <div class="drop-zone-text">拖拽视频到此处 或 点击选择文件</div>
+                    <div class="drop-zone-hint">支持 MP4、WebM 格式（建议小于50MB）</div>
+                </div>
+                <input type="file" id="videoFileInput" accept="video/*" style="display:none" onchange="handleFileSelect(event, 'video')">
+                <div class="or-divider">或输入 URL（推荐）</div>
+                <input type="url" id="bgVideoUrl" placeholder="输入视频地址，如 https://...mp4" onchange="previewVideo()">
+                <p>💡 提示：使用 URL 链接视频更稳定，推荐使用网络视频地址</p>
+                <div class="preview-container" id="videoPreview"></div>
+            </div>
+
+            <div class="settings-section" id="doorSection">
+                <label>📦 互动框设置</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="font-size: 0.85rem; color: #6b7280;">宽度 (px)</label>
+                        <input type="number" id="doorWidth" value="200" min="100" max="800" style="width: 100%; padding: 0.6rem; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; color: #6b7280;">高度 (px)</label>
+                        <input type="number" id="doorHeight" value="120" min="60" max="600" style="width: 100%; padding: 0.6rem; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem;">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="font-size: 0.85rem; color: #6b7280;">左边距 %</label>
+                        <input type="number" id="doorLeft" value="50" min="0" max="95" style="width: 100%; padding: 0.6rem; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; color: #6b7280;">顶边距 %</label>
+                        <input type="number" id="doorTop" value="50" min="0" max="95" style="width: 100%; padding: 0.6rem; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem;">
+                    </div>
+                </div>
+                <div>
+                    <label style="font-size: 0.85rem; color: #6b7280;">背景颜色</label>
+                    <input type="color" id="doorBgColor" value="#3b82f6" style="width: 100%; height: 40px; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer;">
+                </div>
+                <p style="margin-top: 0.5rem;">调整互动框的大小、位置和颜色，点击框可进入</p>
+            </div>
+
+            <button class="settings-save" onclick="saveSettings()">保存设置</button>
+        </div>
+    </div>
+
+    <script>
+        let currentBgType = 'image';
+
+        // 加载首页设置
+        function loadLandingSettings() {
+            const settings = JSON.parse(localStorage.getItem('landingSettings') || '{}');
+            currentBgType = settings.type || 'image';
+            
+            // 隐藏加载状态
+            document.getElementById('videoLoading').classList.remove('show');
+            
+            if (currentBgType === 'video' && settings.url) {
+                document.getElementById('bgImage').style.display = 'none';
+                document.getElementById('videoPlaceholder').style.display = 'none';
+                const video = document.getElementById('bgVideo');
+                video.style.display = 'block';
+                video.src = settings.url;
+                // 显示加载提示
+                document.getElementById('videoLoading').classList.add('show');
+                
+                // 尝试播放视频
+                video.load();
+                video.play().catch(err => {
+                    console.log('视频自动播放失败，可能需要用户交互');
+                });
+            } else if (settings.url) {
+                document.getElementById('bgVideo').style.display = 'none';
+                document.getElementById('videoPlaceholder').style.display = 'none';
+                const bgImage = document.getElementById('bgImage');
+                bgImage.style.display = 'block';
+                bgImage.style.backgroundImage = `url(${settings.url})`;
+            } else {
+                // 默认渐变背景
+                document.getElementById('bgVideo').style.display = 'none';
+                document.getElementById('videoPlaceholder').style.display = 'none';
+                const bgImage = document.getElementById('bgImage');
+                bgImage.style.display = 'block';
+                bgImage.style.backgroundImage = 'linear-gradient(135deg, #1e3a5f, #2563eb)';
+            }
+
+            // 更新按钮状态
+            document.querySelectorAll('.bg-type-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.type === currentBgType);
+            });
+
+            // 加载门设置
+            loadDoorSettings();
+
+            // 检查是否为管理员，显示设置按钮
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (currentUser && currentUser.role === 'admin') {
+                document.getElementById('adminSettingsBtn').style.display = 'block';
+            }
+        }
+
+        // 视频加载成功
+        function videoLoaded() {
+            document.getElementById('videoLoading').classList.remove('show');
+            document.getElementById('videoPlaceholder').style.display = 'none';
+        }
+
+        // 视频加载失败
+        function videoFailed() {
+            document.getElementById('videoLoading').classList.remove('show');
+            document.getElementById('videoPlaceholder').style.display = 'block';
+            document.getElementById('bgVideo').style.display = 'none';
+            // 提示用户
+            const hint = document.getElementById('adminDropHint');
+            hint.textContent = '⚠️ 视频加载失败，请尝试图片背景或重新上传视频';
+            hint.style.background = 'rgba(251, 191, 36, 0.95)';
+        }
+
+        // 加载门设置
+        function loadDoorSettings() {
+            const settings = JSON.parse(localStorage.getItem('landingSettings') || '{}');
+            const door = document.getElementById('doorBtn');
+            
+            if (settings.door) {
+                door.style.width = settings.door.width + 'px';
+                door.style.height = settings.door.height + 'px';
+                door.style.left = settings.door.left + '%';
+                door.style.top = settings.door.top + '%';
+                door.style.transform = 'translate(-50%, -50%)';
+                // 只设置边框颜色
+                door.style.setProperty('--border-color', settings.door.bgColor || '#3b82f6');
+                door.querySelector('.door').style.borderColor = settings.door.bgColor || '#3b82f6';
+            }
+        }
+
+        function setBgType(type) {
+            currentBgType = type;
+            document.querySelectorAll('.bg-type-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.type === type);
+            });
+            document.getElementById('imageSection').style.display = type === 'image' ? 'block' : 'none';
+            document.getElementById('videoSection').style.display = type === 'video' ? 'block' : 'none';
+        }
+
+        function previewImage() {
+            const url = document.getElementById('bgImageUrl').value;
+            const preview = document.getElementById('imagePreview');
+            if (url) {
+                preview.innerHTML = `<img src="${url}" alt="预览" onerror="this.parentElement.innerHTML='<div style=\\'height:100px;background:#fee2e2;display:flex;align-items:center;justify-content:center;color:#ef4444;\\'>图片加载失败</div>'">`;
+            } else {
+                preview.innerHTML = '';
+            }
+        }
+
+        function previewVideo() {
+            const url = document.getElementById('bgVideoUrl').value;
+            const preview = document.getElementById('videoPreview');
+            if (url) {
+                preview.innerHTML = `<video src="${url}" controls style="width:100%;max-height:150px;"></video>`;
+            } else {
+                preview.innerHTML = '<div class="video-placeholder">视频预览</div>';
+            }
+        }
+
+        function openSettings() {
+            const settings = JSON.parse(localStorage.getItem('landingSettings') || '{}');
+            document.getElementById('bgImageUrl').value = settings.type === 'image' ? (settings.url || '') : '';
+            document.getElementById('bgVideoUrl').value = settings.type === 'video' ? (settings.url || '') : '';
+            setBgType(settings.type || 'image');
+            previewImage();
+            previewVideo();
+            
+            // 加载门设置
+            if (settings.door) {
+                document.getElementById('doorWidth').value = settings.door.width || 200;
+                document.getElementById('doorHeight').value = settings.door.height || 150;
+                document.getElementById('doorLeft').value = settings.door.left || 50;
+                document.getElementById('doorTop').value = settings.door.top || 50;
+                document.getElementById('doorBgColor').value = settings.door.bgColor || '#3b82f6';
+            }
+            
+            document.getElementById('settingsModal').classList.add('show');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('show');
+        }
+
+        function saveSettings() {
+            const existingSettings = JSON.parse(localStorage.getItem('landingSettings') || '{}');
+            const settings = {
+                type: currentBgType,
+                url: currentBgType === 'image' ? document.getElementById('bgImageUrl').value : document.getElementById('bgVideoUrl').value,
+                door: {
+                    width: parseInt(document.getElementById('doorWidth').value) || 200,
+                    height: parseInt(document.getElementById('doorHeight').value) || 150,
+                    left: parseInt(document.getElementById('doorLeft').value) || 50,
+                    top: parseInt(document.getElementById('doorTop').value) || 50,
+                    bgColor: document.getElementById('doorBgColor').value || '#3b82f6'
+                }
+            };
+            localStorage.setItem('landingSettings', JSON.stringify(settings));
+            loadLandingSettings();
+            closeSettings();
+            alert('首页设置已保存！');
+        }
+
+        // 点击弹窗外部关闭
+        document.getElementById('settingsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSettings();
+            }
+        });
+
+        // 禁止鼠标滚轮滚动
+        document.addEventListener('wheel', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+
+        // 禁止触摸滚动
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+
+        // ========== 拖拽和粘贴功能 ==========
+
+        // 检查是否为管理员
+        function isAdmin() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            return currentUser && currentUser.role === 'admin';
+        }
+
+        // 页面加载时显示/隐藏管理员提示
+        function checkAdminHint() {
+            const hint = document.getElementById('adminDropHint');
+            if (isAdmin()) {
+                hint.style.display = 'block';
+            }
+        }
+
+        // 拖拽悬停效果
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        // 处理文件选择
+        function handleFileSelect(e, type) {
+            const file = e.target.files[0];
+            if (file) {
+                processFile(file, type);
+            }
+        }
+
+        // 处理拖放文件
+        function handleDrop(e, type) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                processFile(file, type);
+            }
+        }
+
+        // 处理文件（转换为Base64并保存）
+        function processFile(file, type) {
+            // 检查文件大小
+            const maxSize = type === 'video' ? 50 * 1024 * 1024 : 10 * 1024 * 1024; // 视频50MB，图片10MB
+            if (file.size > maxSize) {
+                alert(type === 'video' ? '视频文件过大，请选择小于50MB的视频' : '图片文件过大，请选择小于10MB的图片');
+                return;
+            }
+
+            // 显示处理中提示
+            const hint = document.getElementById('adminDropHint');
+            const originalText = hint.textContent;
+            hint.textContent = type === 'video' ? '⏳ 正在处理视频...' : '⏳ 正在处理图片...';
+            hint.style.background = 'rgba(251, 191, 36, 0.95)'; // 黄色提示
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                
+                // 检查 localStorage 可用空间
+                try {
+                    localStorage.setItem('_test', 'test');
+                    localStorage.removeItem('_test');
+                } catch (e) {
+                    alert('浏览器存储空间不足，请清理浏览器缓存后重试');
+                    hint.textContent = '❌ 存储空间不足';
+                    hint.style.background = 'rgba(239, 68, 68, 0.95)';
+                    setTimeout(() => {
+                        hint.textContent = originalText;
+                        hint.style.background = 'rgba(255,255,255,0.95)';
+                    }, 3000);
+                    return;
+                }
+                
+                // 保存设置
+                const settings = {
+                    type: type,
+                    url: dataUrl
+                };
+                
+                try {
+                    localStorage.setItem('landingSettings', JSON.stringify(settings));
+                } catch (e) {
+                    alert('存储失败！视频/图片太大，建议使用 URL 链接或更小的文件');
+                    hint.textContent = '❌ 文件太大，存储失败';
+                    hint.style.background = 'rgba(239, 68, 68, 0.95)';
+                    setTimeout(() => {
+                        hint.textContent = originalText;
+                        hint.style.background = 'rgba(255,255,255,0.95)';
+                    }, 3000);
+                    return;
+                }
+                
+                // 更新显示
+                if (type === 'image') {
+                    document.getElementById('bgImageUrl').value = dataUrl;
+                    previewImage();
+                } else {
+                    document.getElementById('bgVideoUrl').value = dataUrl;
+                    previewVideo();
+                }
+                
+                // 直接应用
+                loadLandingSettings();
+                
+                // 恢复提示
+                hint.textContent = '✅ ' + (type === 'video' ? '视频' : '图片') + '设置成功！';
+                hint.style.background = 'rgba(34, 197, 94, 0.95)'; // 绿色提示
+                setTimeout(() => {
+                    hint.textContent = originalText;
+                    hint.style.background = 'rgba(255,255,255,0.95)';
+                }, 2000);
+            };
+            
+            reader.onerror = function() {
+                hint.textContent = '❌ 文件处理失败，请重试';
+                hint.style.background = 'rgba(239, 68, 68, 0.95)'; // 红色提示
+                setTimeout(() => {
+                    hint.textContent = originalText;
+                    hint.style.background = 'rgba(255,255,255,0.95)';
+                }, 3000);
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        // 处理粘贴事件
+        document.addEventListener('paste', function(e) {
+            if (!isAdmin()) return;
+            
+            const items = e.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                // 先检查视频（因为某些浏览器会把视频当作 image 类型）
+                if (items[i].type.startsWith('video/') || items[i].type.indexOf('video') !== -1) {
+                    const file = items[i].getAsFile();
+                    if (file) {
+                        processFile(file, 'video');
+                        return;
+                    }
+                }
+                // 再检查图片
+                if (items[i].type.startsWith('image/') || items[i].type.indexOf('image') !== -1) {
+                    const file = items[i].getAsFile();
+                    if (file) {
+                        // 排除视频文件被识别为图片的情况
+                        if (!file.type.startsWith('video/')) {
+                            processFile(file, 'image');
+                            return;
+                        }
+                    }
+                }
+            }
+            
+            // 尝试从 files 中检查（某些浏览器粘贴视频的方式）
+            const files = e.clipboardData.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('video/')) {
+                    processFile(file, 'video');
+                } else if (file.type.startsWith('image/')) {
+                    processFile(file, 'image');
+                }
+            }
+        });
+
+        // 整个页面拖拽监听
+        let dropOverlay = null;
+
+        document.addEventListener('dragenter', function(e) {
+            if (!isAdmin()) return;
+            e.preventDefault();
+            if (!dropOverlay) {
+                dropOverlay = document.createElement('div');
+                dropOverlay.className = 'drop-overlay';
+                dropOverlay.innerHTML = '📁<p>释放文件即可设为背景</p>';
+                document.body.appendChild(dropOverlay);
+            }
+            dropOverlay.classList.add('show');
+        });
+
+        document.addEventListener('dragover', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('dragleave', function(e) {
+            if (!isAdmin()) return;
+            e.preventDefault();
+            // 只有离开窗口时才隐藏
+            if (e.relatedTarget === null && dropOverlay) {
+                dropOverlay.classList.remove('show');
+            }
+        });
+
+        document.addEventListener('drop', function(e) {
+            if (!isAdmin()) return;
+            e.preventDefault();
+            if (dropOverlay) {
+                dropOverlay.classList.remove('show');
+            }
+            
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                // 根据文件类型判断
+                if (file.type.startsWith('image/')) {
+                    processFile(file, 'image');
+                } else if (file.type.startsWith('video/')) {
+                    processFile(file, 'video');
+                } else {
+                    alert('请拖拽图片或视频文件！');
+                }
+            }
+        });
+
+        // 初始化
+        loadLandingSettings();
+        checkAdminHint();
+
+        // 点击门进入网站
+        function enterSite() {
+            const door = document.getElementById('doorBtn');
+            door.classList.add('clicking');
+            
+            setTimeout(() => {
+                door.classList.remove('clicking');
+                
+                // 检查是否已登录
+                const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (currentUser && currentUser.isLoggedIn) {
+                    // 已登录，跳转到首页/知识库
+                    window.location.href = 'index.html';
+                } else {
+                    // 未登录，跳转到注册页面
+                    window.location.href = 'register.html';
+                }
+            }, 200);
+        }
+
+        // 键盘回车也可进入
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                enterSite();
+            }
+        });
+    </script>
+</body>
+</html>
