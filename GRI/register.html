@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 地理知识库</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e8f4fd 0%, #f0f9ff 50%, #e0f2fe 100%);
+            padding: 2rem 0;
+        }
+
+        .register-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .register-container-main {
+            display: flex;
+            gap: 3rem;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .register-side {
+            flex: 1;
+            max-width: 420px;
+        }
+
+        .register-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(37, 99, 235, 0.15);
+            animation: fadeInUp 0.6s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-icon {
+            font-size: 3rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            color: #1e3a5f;
+            font-weight: 700;
+        }
+
+        .logo p {
+            color: #64748b;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* 登录/注册切换标签 */
+        .auth-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 2rem;
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 0.25rem;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .auth-tab:hover {
+            color: #2563eb;
+        }
+
+        .auth-tab.active {
+            background: white;
+            color: #2563eb;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-panel {
+            display: none;
+        }
+
+        .form-panel.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #1e3a5f;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border: 2px solid #bfdbfe;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-hint {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 0.5rem;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #64748b;
+        }
+
+        .form-footer a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .demo-info {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #f0f9ff;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .demo-info h4 {
+            color: #1e3a5f;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .demo-info p {
+            color: #64748b;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .demo-info code {
+            background: #e0f2fe;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #1e3a5f;
+        }
+
+        .error-msg {
+            color: #ef4444;
+            text-align: center;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: #fef2f2;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .success-msg {
+            color: #16a34a;
+            text-align: center;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: #f0fdf4;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .notice {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #fef3c7;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .notice p {
+            color: #92400e;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        /* 自定义卡片区域 */
+        .custom-cards-section {
+            margin-bottom: 3rem;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .custom-cards-title {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #1e3a5f;
+            margin-bottom: 2rem;
+            font-weight: 700;
+        }
+
+        .custom-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .custom-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .custom-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 40px rgba(37, 99, 235, 0.2);
+        }
+
+        .custom-card-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .custom-card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .custom-card-image-placeholder {
+            font-size: 3rem;
+        }
+
+        .custom-card-content {
+            padding: 1.25rem;
+        }
+
+        .custom-card-title {
+            font-size: 1.1rem;
+            color: #1e3a5f;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .custom-card-description {
+            font-size: 0.9rem;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .custom-card-meta {
+            margin-top: 1rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* 编辑按钮 */
+        .edit-overlay {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .edit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s;
+        }
+
+        .edit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        /* 编辑模态框 */
+        .edit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .edit-modal.active {
+            display: flex;
+        }
+
+        .edit-modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .edit-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .edit-modal-header h3 {
+            font-size: 1.3rem;
+            color: #1e3a5f;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #64748b;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: color 0.3s;
+        }
+
+        .close-modal:hover {
+            color: #ef4444;
+        }
+
+        .edit-form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .edit-form-group label {
+            display: block;
+            font-weight: 600;
+            color: #1e3a5f;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .edit-form-group input,
+        .edit-form-group textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .edit-form-group input:focus,
+        .edit-form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .edit-form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .image-upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8fafc;
+        }
+
+        .image-upload-area:hover {
+            border-color: #667eea;
+            background: #f1f5f9;
+        }
+
+        .image-upload-area.has-image {
+            padding: 1rem;
+            position: relative;
+        }
+
+        .image-upload-area img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+        }
+
+        .upload-placeholder {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .upload-placeholder span {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .edit-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .btn-save {
+            flex: 1;
+            padding: 0.9rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 0.9rem;
+            background: #f1f5f9;
+            color: #64748b;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .btn-delete {
+            padding: 0.9rem 1.5rem;
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-delete:hover {
+            background: #fecaca;
+        }
+
+        .card-index {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .edit-modal-content {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            
+            .edit-actions {
+                flex-direction: column;
+            }
+        }
+
+        /* 滚动提示箭头 */
+        .scroll-indicator {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+            animation: bounceDown 2s infinite;
+        }
+
+        .scroll-indicator:hover {
+            opacity: 1;
+        }
+
+        .scroll-arrow {
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 20px solid #2563eb;
+            filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.3));
+        }
+
+        .scroll-indicator-text {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        @keyframes bounceDown {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            40% {
+                transform: translateX(-50%) translateY(-15px);
+            }
+            60% {
+                transform: translateX(-50%) translateY(-8px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .scroll-indicator {
+                bottom: 20px;
+            }
+            
+            .scroll-arrow {
+                border-left: 12px solid transparent;
+                border-right: 12px solid transparent;
+                border-top: 16px solid #2563eb;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <!-- 自定义卡片区域 -->
+        <div class="custom-cards-section" id="customCardsSection">
+            <h2 class="custom-cards-title">我们有</h2>
+            <div class="custom-cards-grid" id="customCardsGrid">
+                <!-- 动态生成卡片 -->
+            </div>
+        </div>
+
+        <div class="register-container-main">
+            <div class="register-side">
+                <div class="register-card">
+                    <div class="logo">
+                        <div class="logo-icon">🌍</div>
+                        <h1 id="authTitle">创建账号</h1>
+                        <p id="authSubtitle">加入地理知识库大家庭</p>
+                    </div>
+
+                    <!-- 登录/注册切换标签 -->
+                    <div class="auth-tabs">
+                        <button class="auth-tab" id="tab-login" onclick="switchTab('login')">登录</button>
+                        <button class="auth-tab active" id="tab-register" onclick="switchTab('register')">注册</button>
+                    </div>
+
+                    <!-- 登录表单 -->
+                    <div class="form-panel" id="login-panel">
+                        <div class="error-msg" id="loginErrorMsg"></div>
+                        
+                        <form id="loginForm">
+                            <div class="form-group">
+                                <label for="loginUsername">用户名</label>
+                                <input type="text" id="loginUsername" placeholder="请输入用户名" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="loginPassword">密码</label>
+                                <input type="password" id="loginPassword" placeholder="请输入密码" required>
+                            </div>
+                            <button type="submit" class="btn-register">登录</button>
+                        </form>
+
+                        <div class="form-footer">
+                            还没有账号？<a href="#" onclick="switchTab('register'); return false;">立即注册</a>
+                        </div>
+                    </div>
+
+                    <!-- 注册表单 -->
+                    <div class="form-panel active" id="register-panel">
+                        <div class="error-msg" id="registerErrorMsg"></div>
+                        <div class="success-msg" id="successMsg">注册成功！即将跳转到登录页面...</div>
+
+                        <form id="registerForm">
+                            <div class="form-group">
+                                <label for="username">用户名</label>
+                                <input type="text" id="username" placeholder="设置用户名" required minlength="3">
+                                <p class="form-hint">至少3个字符</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">密码</label>
+                                <input type="password" id="password" placeholder="设置密码" required minlength="6">
+                                <p class="form-hint">至少6个字符</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmPassword">确认密码</label>
+                                <input type="password" id="confirmPassword" placeholder="再次输入密码" required>
+                            </div>
+                            <button type="submit" class="btn-register">注册</button>
+                        </form>
+
+                        <div class="form-footer">
+                            已有账号？<a href="#" onclick="switchTab('login'); return false;">立即登录</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑按钮 (仅管理员可见) -->
+    <div class="edit-overlay" id="editOverlay" style="display: none;">
+        <button class="edit-btn" onclick="openEditModal()">✏️ 自定义内容</button>
+    </div>
+
+    <!-- 编辑模态框 -->
+    <div class="edit-modal" id="editModal">
+        <div class="edit-modal-content">
+            <div class="edit-modal-header">
+                <h3>📝 自定义卡片内容</h3>
+                <button class="close-modal" onclick="closeEditModal()">&times;</button>
+            </div>
+            
+            <form id="editCardForm">
+                <input type="hidden" id="editCardIndex">
+                
+                <div class="edit-form-group">
+                    <label>卡片标题</label>
+                    <input type="text" id="editCardTitle" placeholder="输入卡片标题" required>
+                </div>
+                
+                <div class="edit-form-group">
+                    <label>卡片描述</label>
+                    <textarea id="editCardDescription" placeholder="输入卡片描述内容" required></textarea>
+                </div>
+                
+                <div class="edit-form-group">
+                    <label>卡片封面（图片或视频）</label>
+                    <div class="image-upload-area" id="imageUploadArea" onclick="document.getElementById('mediaInput').click()">
+                        <input type="file" id="mediaInput" accept="image/*,video/*" style="display: none;" onchange="handleMediaUpload(event)">
+                        <div class="upload-placeholder" id="uploadPlaceholder">
+                            <span>🖼️</span>
+                            <p>点击上传图片或视频</p>
+                            <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem;">支持 JPG, PNG, MP4, WebM 格式</p>
+                        </div>
+                        <img id="imagePreview" style="display: none;">
+                        <video id="videoPreview" style="display: none; max-width: 100%; max-height: 200px; border-radius: 8px;" controls></video>
+                        <div id="mediaTypeBadge" style="display: none; position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;"></div>
+                    </div>
+                    <button type="button" onclick="removeMedia()" id="removeMediaBtn" style="display: none; margin-top: 0.5rem; padding: 0.5rem 1rem; background: #fee2e2; color: #dc2626; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem;">删除媒体</button>
+                </div>
+                
+                <div class="edit-form-group">
+                    <label>发布时间（可选）</label>
+                    <input type="text" id="editCardDate" placeholder="例如：2024年1月15日">
+                </div>
+
+                <div class="edit-actions">
+                    <button type="button" class="btn-delete" id="deleteCardBtn" onclick="deleteCurrentCard()">🗑️ 删除</button>
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">取消</button>
+                    <button type="submit" class="btn-save">💾 保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 默认卡片数据
+        const defaultCards = [
+            {
+                title: '欢迎探索地理知识库',
+                description: '欢迎来到地理知识库平台！这里汇聚了丰富的地理信息，涵盖各省市的地理位置、气候特点、人文景观等。无论你是地理爱好者还是学生，都能在这里找到有价值的内容。',
+                image: '',
+                date: '每日更新'
+            },
+            {
+                title: '新增地区介绍功能',
+                description: '平台新增了详细的地区介绍功能，用户可以浏览各省市的详细介绍，包括行政区划、历史文化、经济发展、自然风光等多个维度的内容。',
+                media: '',
+                mediaType: 'image',
+                date: '新功能上线'
+            },
+            {
+                title: '知识库内容持续扩充中',
+                description: '我们的团队正在不断收集和整理更多地理知识，力争为用户提供最全面、最准确的地理信息。欢迎大家提出宝贵建议！',
+                media: '',
+                mediaType: 'image',
+                date: '建设中'
+            }
+        ];
+
+        // 加载卡片数据
+        function loadCards() {
+            let cardsData = localStorage.getItem('customCards');
+            if (!cardsData) {
+                // 使用新的默认卡片格式
+                localStorage.setItem('customCards', JSON.stringify(defaultCards));
+                cardsData = defaultCards;
+            } else {
+                cardsData = JSON.parse(cardsData);
+                // 兼容旧格式：将 image 转换为 media
+                cardsData = cardsData.map(card => {
+                    if (card.image && !card.media) {
+                        card.media = card.image;
+                        card.mediaType = 'image';
+                        delete card.image;
+                    }
+                    return card;
+                });
+                localStorage.setItem('customCards', JSON.stringify(cardsData));
+            }
+            
+            renderCards(cardsData);
+        }
+
+        // 渲染卡片
+        function renderCards(cards) {
+            const grid = document.getElementById('customCardsGrid');
+            grid.innerHTML = '';
+            
+            // 检查是否为管理员
+            const currentUser = localStorage.getItem('currentUser');
+            const isAdmin = currentUser ? JSON.parse(currentUser).role === 'admin' : false;
+            
+            if (cards.length === 0) {
+                const emptyText = isAdmin ? '暂无内容，点击右上角"自定义内容"添加' : '暂无内容';
+                grid.innerHTML = `<p style="text-align: center; color: #64748b; grid-column: 1/-1; padding: 2rem;">${emptyText}</p>`;
+                return;
+            }
+
+            cards.forEach((card, index) => {
+                const clickHandler = isAdmin ? `openEditModal(${index})` : '';
+                const metaText = isAdmin ? '<span>点击编辑</span>' : '';
+                
+                // 根据媒体类型渲染图片或视频（兼容旧格式 card.image）
+                let mediaContent = '';
+                const mediaSrc = card.media || card.image || '';
+                const mediaType = card.mediaType || 'image';
+                
+                if (mediaSrc) {
+                    if (mediaType === 'video') {
+                        mediaContent = `<video src="${mediaSrc}" style="width: 100%; height: 100%; object-fit: cover;" muted loop></video>`;
+                    } else {
+                        mediaContent = `<img src="${mediaSrc}" alt="${card.title}">`;
+                    }
+                } else {
+                    mediaContent = '<div class="custom-card-image-placeholder">🌍</div>';
+                }
+                
+                const cardHTML = `
+                    <div class="custom-card" onclick="${clickHandler}">
+                        <div class="custom-card-image">
+                            ${mediaContent}
+                        </div>
+                        <div class="custom-card-content">
+                            <div class="card-index">卡片 ${index + 1}</div>
+                            <h3 class="custom-card-title">${card.title}</h3>
+                            <p class="custom-card-description">${card.description}</p>
+                            ${card.date ? `<div class="custom-card-meta"><span>📅 ${card.date}</span>${metaText}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += cardHTML;
+            });
+        }
+
+        // 打开编辑模态框
+        function openEditModal(index) {
+            const modal = document.getElementById('editModal');
+            const form = document.getElementById('editCardForm');
+            
+            // 如果是新增（index 为 undefined）或者是点击新建按钮
+            if (index === undefined) {
+                index = -1;
+            }
+            
+            document.getElementById('editCardIndex').value = index;
+            
+            // 加载卡片数据到表单
+            let cardsData = JSON.parse(localStorage.getItem('customCards') || '[]');
+            
+            if (index >= 0 && index < cardsData.length) {
+                const card = cardsData[index];
+                document.getElementById('editCardTitle').value = card.title || '';
+                document.getElementById('editCardDescription').value = card.description || '';
+                document.getElementById('editCardDate').value = card.date || '';
+                
+                // 显示图片或视频
+                if (card.media) {
+                    if (card.mediaType === 'video') {
+                        document.getElementById('videoPreview').src = card.media;
+                        document.getElementById('videoPreview').style.display = 'block';
+                        document.getElementById('imagePreview').style.display = 'none';
+                        document.getElementById('mediaTypeBadge').textContent = '🎬 视频';
+                        document.getElementById('mediaTypeBadge').style.display = 'block';
+                    } else {
+                        document.getElementById('imagePreview').src = card.media;
+                        document.getElementById('imagePreview').style.display = 'block';
+                        document.getElementById('videoPreview').style.display = 'none';
+                        document.getElementById('mediaTypeBadge').textContent = '🖼️ 图片';
+                        document.getElementById('mediaTypeBadge').style.display = 'block';
+                    }
+                    document.getElementById('uploadPlaceholder').style.display = 'none';
+                    document.getElementById('imageUploadArea').classList.add('has-image');
+                    document.getElementById('removeMediaBtn').style.display = 'inline-block';
+                } else {
+                    resetMediaUpload();
+                }
+                
+                document.getElementById('deleteCardBtn').style.display = 'inline-block';
+            } else {
+                // 新建卡片
+                form.reset();
+                resetMediaUpload();
+                document.getElementById('deleteCardBtn').style.display = 'none';
+            }
+            
+            modal.classList.add('active');
+        }
+
+        // 关闭编辑模态框
+        function closeEditModal() {
+            const modal = document.getElementById('editModal');
+            modal.classList.remove('active');
+            resetMediaUpload();
+        }
+
+        // 重置媒体上传区域
+        function resetMediaUpload() {
+            document.getElementById('imagePreview').src = '';
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('videoPreview').src = '';
+            document.getElementById('videoPreview').style.display = 'none';
+            document.getElementById('uploadPlaceholder').style.display = 'block';
+            document.getElementById('imageUploadArea').classList.remove('has-image');
+            document.getElementById('removeMediaBtn').style.display = 'none';
+            document.getElementById('mediaInput').value = '';
+            document.getElementById('mediaTypeBadge').style.display = 'none';
+        }
+
+        // 处理媒体上传（图片或视频）
+        function handleMediaUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const isVideo = file.type.startsWith('video/');
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    if (isVideo) {
+                        document.getElementById('videoPreview').src = e.target.result;
+                        document.getElementById('videoPreview').style.display = 'block';
+                        document.getElementById('imagePreview').style.display = 'none';
+                        document.getElementById('mediaTypeBadge').textContent = '🎬 视频';
+                        document.getElementById('mediaTypeBadge').style.display = 'block';
+                    } else {
+                        document.getElementById('imagePreview').src = e.target.result;
+                        document.getElementById('imagePreview').style.display = 'block';
+                        document.getElementById('videoPreview').style.display = 'none';
+                        document.getElementById('mediaTypeBadge').textContent = '🖼️ 图片';
+                        document.getElementById('mediaTypeBadge').style.display = 'block';
+                    }
+                    document.getElementById('uploadPlaceholder').style.display = 'none';
+                    document.getElementById('imageUploadArea').classList.add('has-image');
+                    document.getElementById('removeMediaBtn').style.display = 'inline-block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 删除媒体
+        function removeMedia() {
+            resetMediaUpload();
+        }
+
+        // 删除当前卡片
+        function deleteCurrentCard() {
+            const index = parseInt(document.getElementById('editCardIndex').value);
+            
+            if (confirm('确定要删除这个卡片吗？')) {
+                let cardsData = JSON.parse(localStorage.getItem('customCards') || '[]');
+                cardsData.splice(index, 1);
+                localStorage.setItem('customCards', JSON.stringify(cardsData));
+                renderCards(cardsData);
+                closeEditModal();
+            }
+        }
+
+        // 表单提交
+        document.getElementById('editCardForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const index = parseInt(document.getElementById('editCardIndex').value);
+            const title = document.getElementById('editCardTitle').value.trim();
+            const description = document.getElementById('editCardDescription').value.trim();
+            const date = document.getElementById('editCardDate').value.trim();
+            
+            // 获取图片或视频
+            let media = '';
+            let mediaType = 'image';
+            
+            const imagePreview = document.getElementById('imagePreview');
+            const videoPreview = document.getElementById('videoPreview');
+            
+            if (videoPreview.style.display !== 'none' && videoPreview.src) {
+                media = videoPreview.src;
+                mediaType = 'video';
+            } else if (imagePreview.style.display !== 'none' && imagePreview.src) {
+                media = imagePreview.src;
+                mediaType = 'image';
+            }
+            
+            let cardsData = JSON.parse(localStorage.getItem('customCards') || '[]');
+            
+            const cardData = {
+                title: title,
+                description: description,
+                date: date,
+                media: media,
+                mediaType: mediaType
+            };
+            
+            if (index >= 0 && index < cardsData.length) {
+                // 更新现有卡片
+                cardsData[index] = cardData;
+            } else {
+                // 新增卡片
+                cardsData.push(cardData);
+            }
+            
+            localStorage.setItem('customCards', JSON.stringify(cardsData));
+            renderCards(cardsData);
+            closeEditModal();
+        });
+
+        // 点击模态框外部关闭
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditModal();
+            }
+        });
+
+        // ESC 键关闭模态框
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeEditModal();
+            }
+        });
+
+        // 页面加载时渲染卡片
+        loadCards();
+
+        // 检查管理员权限，显示/隐藏编辑按钮
+        function checkAdminPermission() {
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                const user = JSON.parse(currentUser);
+                if (user.role === 'admin') {
+                    document.getElementById('editOverlay').style.display = 'block';
+                    // 为卡片添加点击编辑功能
+                    document.querySelectorAll('.custom-card').forEach((card, index) => {
+                        card.style.cursor = 'pointer';
+                    });
+                }
+            }
+        }
+        checkAdminPermission();
+
+        // 管理员账号配置
+        const ADMIN_USERNAME = 'admin';
+        const ADMIN_PASSWORD = 'admin123';
+
+        // 如果已登录，直接跳转
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+            window.location.href = 'index.html';
+        }
+
+        // 检查URL参数决定显示哪个表单
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab');
+        if (tab === 'login') {
+            switchTab('login');
+        }
+
+        // 切换登录/注册标签
+        function switchTab(tabName) {
+            const loginTab = document.getElementById('tab-login');
+            const registerTab = document.getElementById('tab-register');
+            const loginPanel = document.getElementById('login-panel');
+            const registerPanel = document.getElementById('register-panel');
+            const authTitle = document.getElementById('authTitle');
+            const authSubtitle = document.getElementById('authSubtitle');
+
+            if (tabName === 'login') {
+                loginTab.classList.add('active');
+                registerTab.classList.remove('active');
+                loginPanel.classList.add('active');
+                registerPanel.classList.remove('active');
+                authTitle.textContent = '登录账号';
+                authSubtitle.textContent = '探索世界，分享知识';
+            } else {
+                loginTab.classList.remove('active');
+                registerTab.classList.add('active');
+                loginPanel.classList.remove('active');
+                registerPanel.classList.add('active');
+                authTitle.textContent = '创建账号';
+                authSubtitle.textContent = '加入地理知识库大家庭';
+            }
+
+            // 更新URL参数
+            const newUrl = new URL(window.location);
+            if (tabName === 'login') {
+                newUrl.searchParams.set('tab', 'login');
+            } else {
+                newUrl.searchParams.delete('tab');
+            }
+            window.history.replaceState({}, '', newUrl);
+        }
+
+        // 登录表单提交处理
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errorMsg = document.getElementById('loginErrorMsg');
+
+            errorMsg.style.display = 'none';
+
+            // 检查管理员账号
+            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+                const user = {
+                    username: username,
+                    role: 'admin',
+                    loginTime: new Date().toISOString()
+                };
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // 检查普通用户
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                const loginUser = {
+                    username: user.username,
+                    role: 'user',
+                    loginTime: new Date().toISOString()
+                };
+                localStorage.setItem('currentUser', JSON.stringify(loginUser));
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // 登录失败
+            errorMsg.textContent = '用户名或密码错误';
+            errorMsg.style.display = 'block';
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorMsg = document.getElementById('registerErrorMsg');
+            const successMsg = document.getElementById('successMsg');
+
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+
+            if (username.toLowerCase() === 'admin') {
+                errorMsg.textContent = '该用户名不可用，请选择其他用户名';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            if (password.length < 6) {
+                errorMsg.textContent = '密码至少需要6个字符';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                errorMsg.textContent = '两次输入的密码不一致';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            if (users.find(u => u.username === username)) {
+                errorMsg.textContent = '该用户名已被注册';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            users.push({
+                username: username,
+                password: password,
+                createTime: new Date().toISOString()
+            });
+            localStorage.setItem('users', JSON.stringify(users));
+
+            successMsg.style.display = 'block';
+
+            setTimeout(() => {
+                switchTab('login');
+                document.getElementById('loginUsername').value = username;
+                document.getElementById('loginPassword').value = '';
+            }, 1500);
+        });
+
+        // 滚动到表单
+        function scrollToForm() {
+            document.querySelector('.register-card').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+    </script>
+
+    <!-- 滚动提示箭头 -->
+    <div class="scroll-indicator" onclick="scrollToForm()">
+        <div class="scroll-arrow"></div>
+    </div>
+</body>
+</html>

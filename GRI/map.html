@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国行政区划 - 地理</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .map-page {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+        }
+
+        .map-header {
+            background: white;
+            padding: 1.5rem 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .back-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+        }
+
+        .map-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .map-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .china-map {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .china-map h2 {
+            text-align: center;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .china-map-image {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .map-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+        }
+
+        .province-hotspots {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .hotspot {
+            position: absolute;
+            cursor: pointer;
+            border-radius: 50%;
+            opacity: 0;
+            transition: all 0.3s;
+            pointer-events: auto;
+        }
+
+        .hotspot:hover {
+            opacity: 1;
+            background: rgba(59, 130, 246, 0.3);
+            border: 2px solid var(--primary-color);
+        }
+
+        .province-hint {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .province-stats {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid var(--bg-color);
+        }
+
+        .stats-title {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-item {
+            background: var(--bg-color);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .map-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .china-map {
+                padding: 1rem;
+            }
+
+            .map-svg {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="map-page">
+    <header class="map-header">
+        <a href="index.html" class="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            返回主页
+        </a>
+        <h1 class="map-title">中国行政区划</h1>
+        <div style="width: 100px;"></div>
+    </header>
+
+    <main class="map-container">
+        <div class="china-map">
+            <h2>点击选择省份/直辖市</h2>
+            
+            <div class="china-map-image">
+                <img src="images/1-250124213951196.jpg" alt="中国地图" class="map-image">
+                
+                <!-- 省份热点区域 -->
+                <div class="province-hotspots" id="hotspotsContainer"></div>
+            </div>
+
+            <p class="province-hint">🖱️ 将鼠标悬停在省份上可查看详情，点击进入该省份</p>
+
+            <div class="province-stats">
+                <h3 class="stats-title">行政区划统计</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">34</div>
+                        <div class="stat-label">省级行政区</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">333</div>
+                        <div class="stat-label">地级行政区</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">2843</div>
+                        <div class="stat-label">县级行政区</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 省份热点配置 (top%, left%, width%, height%, rotation)
+        const provinceHotspots = {
+            '新疆': { top: 12, left: 8, width: 22, height: 20 },
+            '西藏': { top: 40, left: 12, width: 18, height: 22 },
+            '甘肃': { top: 26, left: 35, width: 10, height: 16 },
+            '青海': { top: 34, left: 28, width: 12, height: 14 },
+            '宁夏': { top: 32, left: 42, width: 4, height: 6 },
+            '内蒙古': { top: 12, left: 38, width: 22, height: 16, rotation: 0 },
+            '陕西': { top: 42, left: 48, width: 8, height: 12 },
+            '四川': { top: 52, left: 32, width: 14, height: 16 },
+            '重庆': { top: 56, left: 46, width: 5, height: 8 },
+            '云南': { top: 66, left: 26, width: 12, height: 14 },
+            '贵州': { top: 62, left: 42, width: 8, height: 12 },
+            '广西': { top: 72, left: 38, width: 10, height: 14 },
+            '黑龙江': { top: 8, left: 72, width: 16, height: 14 },
+            '吉林': { top: 20, left: 72, width: 10, height: 10 },
+            '辽宁': { top: 28, left: 70, width: 10, height: 10 },
+            '北京': { top: 34, left: 56, width: 4, height: 4 },
+            '天津': { top: 36, left: 60, width: 3, height: 4 },
+            '河北': { top: 30, left: 52, width: 14, height: 14 },
+            '山西': { top: 34, left: 48, width: 8, height: 12 },
+            '山东': { top: 42, left: 62, width: 10, height: 14 },
+            '河南': { top: 42, left: 52, width: 10, height: 12 },
+            '江苏': { top: 50, left: 62, width: 10, height: 10 },
+            '上海': { top: 52, left: 72, width: 3, height: 4 },
+            '浙江': { top: 56, left: 68, width: 8, height: 10 },
+            '安徽': { top: 50, left: 56, width: 8, height: 10 },
+            '湖北': { top: 52, left: 52, width: 10, height: 12 },
+            '湖南': { top: 62, left: 50, width: 10, height: 14 },
+            '江西': { top: 60, left: 60, width: 8, height: 12 },
+            '福建': { top: 64, left: 66, width: 8, height: 12 },
+            '广东': { top: 72, left: 54, width: 14, height: 14 },
+            '海南': { top: 88, left: 52, width: 4, height: 6 },
+            '香港': { top: 82, left: 64, width: 2, height: 2 },
+            '澳门': { top: 84, left: 58, width: 1.5, height: 1.5 },
+            '台湾': { top: 60, left: 78, width: 6, height: 16 }
+        };
+
+        let editingMode = false;
+        let currentEditProvince = null;
+        let isDragging = false;
+        let isResizing = false;
+        let resizeDir = '';
+        let dragStartX, dragStartY;
+        let startConfig = {};
+
+        function createHotspots() {
+            const container = document.getElementById('hotspotsContainer');
+            container.innerHTML = '';
+            
+            for (const [name, config] of Object.entries(provinceHotspots)) {
+                const hotspot = document.createElement('div');
+                hotspot.className = 'hotspot';
+                hotspot.dataset.province = name;
+                hotspot.style.cssText = `top: ${config.top}%; left: ${config.left}%; width: ${config.width}%; height: ${config.height}%;`;
+                
+                if (editingMode) {
+                    hotspot.style.opacity = '0.3';
+                    hotspot.style.background = 'rgba(255, 0, 0, 0.2)';
+                    hotspot.style.border = '2px dashed #ff0000';
+                    hotspot.style.cursor = 'move';
+                    
+                    // 对内蒙古应用旋转
+                    if (name === '内蒙古' && config.rotation) {
+                        hotspot.style.transformOrigin = 'center center';
+                        hotspot.style.transform = `rotate(${config.rotation}deg)`;
+                    }
+                    
+                    // 添加省份名称标签
+                    const label = document.createElement('span');
+                    label.className = 'hotspot-label';
+                    label.textContent = name;
+                    hotspot.appendChild(label);
+                    
+                    // 对内蒙古添加旋转控制，而不是调整大小
+                    if (name === '内蒙古') {
+                        const rotateHandle = document.createElement('div');
+                        rotateHandle.className = 'rotate-handle';
+                        rotateHandle.innerHTML = '↻';
+                        rotateHandle.onmousedown = (e) => startRotate(e, name);
+                        hotspot.appendChild(rotateHandle);
+                        
+                        hotspot.onmousedown = (e) => {
+                            if (!e.target.classList.contains('rotate-handle')) {
+                                startDrag(e, name);
+                            }
+                        };
+                    } else {
+                        // 添加调整大小的控制点
+                        const handles = ['nw', 'ne', 'sw', 'se'];
+                        handles.forEach(dir => {
+                            const handle = document.createElement('div');
+                            handle.className = 'resize-handle resize-' + dir;
+                            handle.dataset.dir = dir;
+                            handle.onmousedown = (e) => startResize(e, name, dir);
+                            hotspot.appendChild(handle);
+                        });
+                        
+                        hotspot.onmousedown = (e) => {
+                            if (!e.target.classList.contains('resize-handle')) {
+                                startDrag(e, name);
+                            }
+                        };
+                    }
+                } else {
+                    // 非编辑模式下也对内蒙古应用旋转
+                    if (name === '内蒙古' && config.rotation) {
+                        hotspot.style.transformOrigin = 'center center';
+                        hotspot.style.transform = `rotate(${config.rotation}deg)`;
+                    }
+                    hotspot.onclick = () => goToProvince(name);
+                }
+                
+                container.appendChild(hotspot);
+            }
+        }
+
+        function startDrag(e, province) {
+            e.preventDefault();
+            isDragging = true;
+            currentEditProvince = province;
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            startConfig = { ...provinceHotspots[province] };
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        function onDrag(e) {
+            if (!isDragging) return;
+            const container = document.querySelector('.china-map-image');
+            const rect = container.getBoundingClientRect();
+            
+            const deltaX = ((e.clientX - dragStartX) / rect.width) * 100;
+            const deltaY = ((e.clientY - dragStartY) / rect.height) * 100;
+            
+            const config = provinceHotspots[currentEditProvince];
+            config.left = Math.max(0, Math.min(100 - config.width, startConfig.left + deltaX));
+            config.top = Math.max(0, Math.min(100 - config.height, startConfig.top + deltaY));
+            
+            updateHotspotStyle(currentEditProvince);
+            updateCoordsPanel();
+        }
+
+        function stopDrag() {
+            isDragging = false;
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+
+        function startResize(e, province, dir) {
+            e.preventDefault();
+            e.stopPropagation();
+            isResizing = true;
+            resizeDir = dir;
+            currentEditProvince = province;
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            startConfig = { ...provinceHotspots[province] };
+            document.addEventListener('mousemove', onResize);
+            document.addEventListener('mouseup', stopResize);
+        }
+
+        function onResize(e) {
+            if (!isResizing) return;
+            const container = document.querySelector('.china-map-image');
+            const rect = container.getBoundingClientRect();
+            
+            const deltaX = ((e.clientX - dragStartX) / rect.width) * 100;
+            const deltaY = ((e.clientY - dragStartY) / rect.height) * 100;
+            
+            const config = provinceHotspots[currentEditProvince];
+            
+            if (resizeDir.includes('e')) {
+                config.width = Math.max(2, startConfig.width + deltaX);
+            }
+            if (resizeDir.includes('w')) {
+                const newWidth = Math.max(2, startConfig.width - deltaX);
+                config.left = startConfig.left + (startConfig.width - newWidth);
+                config.width = newWidth;
+            }
+            if (resizeDir.includes('s')) {
+                config.height = Math.max(2, startConfig.height + deltaY);
+            }
+            if (resizeDir.includes('n')) {
+                const newHeight = Math.max(2, startConfig.height - deltaY);
+                config.top = startConfig.top + (startConfig.height - newHeight);
+                config.height = newHeight;
+            }
+            
+            updateHotspotStyle(currentEditProvince);
+            updateCoordsPanel();
+        }
+
+        function stopResize() {
+            isResizing = false;
+            document.removeEventListener('mousemove', onResize);
+            document.removeEventListener('mouseup', stopResize);
+        }
+
+        // 旋转功能
+        let isRotating = false;
+        let rotateStartAngle = 0;
+        let startRotation = 0;
+
+        function startRotate(e, province) {
+            e.preventDefault();
+            e.stopPropagation();
+            isRotating = true;
+            currentEditProvince = province;
+            
+            const container = document.querySelector('.china-map-image');
+            const rect = container.getBoundingClientRect();
+            const hotspot = document.querySelector(`.hotspot[data-province="${province}"]`);
+            const config = provinceHotspots[province];
+            
+            // 计算初始角度
+            const centerX = rect.left + (config.left + config.width / 2) * rect.width / 100;
+            const centerY = rect.top + (config.top + config.height / 2) * rect.height / 100;
+            rotateStartAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * 180 / Math.PI;
+            startRotation = config.rotation || 0;
+            
+            document.addEventListener('mousemove', onRotate);
+            document.addEventListener('mouseup', stopRotate);
+        }
+
+        function onRotate(e) {
+            if (!isRotating) return;
+            
+            const container = document.querySelector('.china-map-image');
+            const rect = container.getBoundingClientRect();
+            const config = provinceHotspots[currentEditProvince];
+            
+            const centerX = rect.left + (config.left + config.width / 2) * rect.width / 100;
+            const centerY = rect.top + (config.top + config.height / 2) * rect.height / 100;
+            const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * 180 / Math.PI;
+            
+            const deltaAngle = currentAngle - rotateStartAngle;
+            config.rotation = startRotation + deltaAngle;
+            
+            updateHotspotStyle(currentEditProvince);
+            updateCoordsPanel();
+        }
+
+        function stopRotate() {
+            isRotating = false;
+            document.removeEventListener('mousemove', onRotate);
+            document.removeEventListener('mouseup', stopRotate);
+        }
+
+        function updateHotspotStyle(province) {
+            const hotspot = document.querySelector(`.hotspot[data-province="${province}"]`);
+            if (hotspot) {
+                const config = provinceHotspots[province];
+                hotspot.style.top = config.top + '%';
+                hotspot.style.left = config.left + '%';
+                hotspot.style.width = config.width + '%';
+                hotspot.style.height = config.height + '%';
+                // 应用旋转（仅对内蒙古）
+                if (province === '内蒙古' && config.rotation) {
+                    hotspot.style.transform = `rotate(${config.rotation}deg)`;
+                } else {
+                    hotspot.style.transform = '';
+                }
+            }
+        }
+
+        function updateCoordsPanel() {
+            if (!currentEditProvince) return;
+            const config = provinceHotspots[currentEditProvince];
+            document.getElementById('editProvince').textContent = currentEditProvince;
+            document.getElementById('editTop').value = config.top.toFixed(1);
+            document.getElementById('editLeft').value = config.left.toFixed(1);
+            document.getElementById('editWidth').value = config.width.toFixed(1);
+            document.getElementById('editHeight').value = config.height.toFixed(1);
+            
+            let displayText = `top: ${config.top.toFixed(1)}%, left: ${config.left.toFixed(1)}%, width: ${config.width.toFixed(1)}%, height: ${config.height.toFixed(1)}%`;
+            if (currentEditProvince === '内蒙古') {
+                displayText += `\nrotation: ${(config.rotation || 0).toFixed(1)}°`;
+            }
+            document.getElementById('coordsDisplay').innerHTML = displayText.replace(/\n/g, '<br>');
+        }
+
+        function goToProvince(province) {
+            window.location.href = 'province.html?name=' + encodeURIComponent(province);
+        }
+
+        function saveAll() {
+            // 保存到 localStorage
+            localStorage.setItem('provinceHotspotsConfig', JSON.stringify(provinceHotspots));
+            console.log('// 更新后的配置:');
+            console.log(JSON.stringify(provinceHotspots, null, 4));
+            alert('所有位置已保存！');
+        }
+
+        function exitEditMode() {
+            // 自动保存
+            localStorage.setItem('provinceHotspotsConfig', JSON.stringify(provinceHotspots));
+            console.log('// 已自动保存配置:');
+            console.log(JSON.stringify(provinceHotspots, null, 4));
+            
+            editingMode = false;
+            isDragging = false;
+            isResizing = false;
+            isRotating = false;
+            createHotspots();
+            document.querySelector('.edit-toggle').textContent = '调试模式';
+            
+            alert('已自动保存所有修改！');
+        }
+
+        // 检查是否为管理员
+        function isAdmin() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            return currentUser && currentUser.role === 'admin';
+        }
+
+        function toggleDebugMode() {
+            if (!isAdmin()) {
+                alert('只有管理员才能进入调试模式！');
+                return;
+            }
+            editingMode = !editingMode;
+            createHotspots();
+            if (!editingMode) {
+                exitEditMode();
+            } else {
+                document.querySelector('.edit-toggle').textContent = '退出调试';
+            }
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 加载保存的配置
+            const savedConfig = localStorage.getItem('provinceHotspotsConfig');
+            if (savedConfig) {
+                try {
+                    const parsed = JSON.parse(savedConfig);
+                    // 合并保存的配置到默认配置
+                    for (const [province, config] of Object.entries(parsed)) {
+                        if (provinceHotspots[province]) {
+                            provinceHotspots[province] = config;
+                        }
+                    }
+                } catch (e) {
+                    console.log('加载保存的配置失败:', e);
+                }
+            }
+            createHotspots();
+        });
+    </script>
+
+    <style>
+        .edit-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+            z-index: 1000;
+        }
+        .edit-toggle:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+        .hotspot {
+            position: absolute;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .hotspot-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 11px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .resize-handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border: 2px solid #ff0000;
+            border-radius: 2px;
+            z-index: 10;
+        }
+        .resize-nw { top: -6px; left: -6px; cursor: nw-resize; }
+        .resize-ne { top: -6px; right: -6px; cursor: ne-resize; }
+        .resize-sw { bottom: -6px; left: -6px; cursor: sw-resize; }
+        .resize-se { bottom: -6px; right: -6px; cursor: se-resize; }
+        
+        .rotate-handle {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 24px;
+            height: 24px;
+            background: #3b82f6;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            z-index: 10;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        .rotate-handle:hover {
+            background: #2563eb;
+        }
+        .rotate-handle:active {
+            cursor: grabbing;
+        }
+        
+        .coords-panel {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 200px;
+        }
+        .coords-panel h4 {
+            margin: 0 0 12px 0;
+            color: #1f2937;
+            font-size: 14px;
+        }
+        .coords-panel .current {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+        .coords-panel .values {
+            font-family: monospace;
+            font-size: 11px;
+            background: #f3f4f6;
+            padding: 8px;
+            border-radius: 6px;
+            color: #374151;
+        }
+        .coords-panel .save-all {
+            margin-top: 12px;
+            width: 100%;
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+    </style>
+
+    <button class="edit-toggle" onclick="toggleDebugMode()">
+        调试模式
+    </button>
+
+    <div class="coords-panel" id="coordsPanel" style="display: none;">
+        <h4>📍 当前位置</h4>
+        <div class="current" id="editProvince">选择省份后显示</div>
+        <div class="values" id="coordsDisplay">top: 0%, left: 0%, width: 0%, height: 0%</div>
+        <button class="save-all" onclick="saveAll()">保存所有修改</button>
+    </div>
+</body>
+</html>
