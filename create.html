@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创建知识 - 地理</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="edit-page">
+    <header class="edit-header">
+        <a href="index.html" class="back-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            返回
+        </a>
+        <div class="header-title">创建知识</div>
+        <button class="save-btn" onclick="saveKnowledge()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            发布
+        </button>
+    </header>
+
+    <main class="edit-main">
+        <form class="edit-form" id="knowledgeForm">
+            <div class="form-section">
+                <label class="form-label">标题</label>
+                <input type="text" id="title" class="form-input title-input" placeholder="输入知识标题" required>
+            </div>
+
+            <!-- 卡片封面图片 -->
+            <div class="form-section">
+                <label class="form-label">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    卡片封面图片
+                </label>
+                <div class="cover-upload-area" id="coverUploadArea" onclick="document.getElementById('coverInput').click()">
+                    <input type="file" id="coverInput" accept="image/*" style="display: none;" onchange="handleCoverUpload(event)">
+                    <div class="cover-upload-placeholder" id="coverPlaceholder">
+                        <span style="font-size: 2rem;">🖼️</span>
+                        <p>点击上传卡片封面图片</p>
+                        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem;">支持 JPG、PNG 格式，建议尺寸 400x300</p>
+                    </div>
+                    <img id="coverPreview" style="display: none; max-width: 100%; max-height: 200px; border-radius: 8px;">
+                </div>
+                <button type="button" onclick="removeCover()" id="removeCoverBtn" style="display: none; margin-top: 0.5rem; padding: 0.5rem 1rem; background: #fee2e2; color: #dc2626; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem;">删除封面图片</button>
+                <input type="hidden" id="coverImage" value="">
+            </div>
+
+            <div class="form-row">
+                <div class="form-section half">
+                    <label class="form-label">分类</label>
+                    <select id="category" class="form-select" required>
+                        <option value="">选择分类</option>
+                        <option value="地形地貌">地形地貌</option>
+                        <option value="气候气象">气候气象</option>
+                        <option value="人文地理">人文地理</option>
+                        <option value="自然资源">自然资源</option>
+                        <option value="环境保护">环境保护</option>
+                    </select>
+                </div>
+                <div class="form-section half">
+                    <label class="form-label">简介</label>
+                    <input type="text" id="summary" class="form-input" placeholder="简短描述（可选）">
+                </div>
+            </div>
+
+            <!-- 行政区划选择 -->
+            <div class="form-section" id="regionSection">
+                <label class="form-label">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    行政区划（可选）
+                </label>
+                <div class="form-row">
+                    <div class="form-section half">
+                        <label class="sub-label">省份/直辖市</label>
+                        <select id="province" class="form-select" onchange="updateCities()">
+                            <option value="">选择省份</option>
+                        </select>
+                    </div>
+                    <div class="form-section half">
+                        <label class="sub-label">城市/区县</label>
+                        <select id="city" class="form-select">
+                            <option value="">先选择省份</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="form-hint">💡 关联行政区划后，知识会出现在对应的地区页面中</p>
+            </div>
+
+            <!-- 页面设置 -->
+            <div class="settings-group">
+                <h3 class="settings-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    页面样式设置
+                </h3>
+
+                <div class="form-section">
+                    <label class="form-label">背景类型</label>
+                    <div class="bg-type-toggle">
+                        <button type="button" class="bg-type-btn active" data-type="image" onclick="toggleBgType('image')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            静态图片
+                        </button>
+                        <button type="button" class="bg-type-btn" data-type="video" onclick="toggleBgType('video')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="5 3 19 12 5 21 5 3"/>
+                            </svg>
+                            动态视频
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-section" id="bgImageSection">
+                    <label class="form-label">背景图片 URL</label>
+                    <input type="text" id="bgImage" class="form-input" placeholder="输入背景图片URL（留空使用渐变背景）">
+                    <p class="form-hint">可使用网络图片地址，如 https://images.unsplash.com/...</p>
+                </div>
+
+                <div class="form-section" id="bgVideoSection" style="display: none;">
+                    <label class="form-label">背景视频 URL</label>
+                    <input type="text" id="bgVideo" class="form-input" placeholder="输入背景视频URL（建议使用MP4格式）">
+                    <p class="form-hint">视频将自动循环播放并静音</p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-section half">
+                        <label class="form-label">文字对齐</label>
+                        <div class="align-options">
+                            <label class="align-option">
+                                <input type="radio" name="textAlign" value="left">
+                                <span>左对齐</span>
+                            </label>
+                            <label class="align-option">
+                                <input type="radio" name="textAlign" value="center" checked>
+                                <span>居中</span>
+                            </label>
+                            <label class="align-option">
+                                <input type="radio" name="textAlign" value="right">
+                                <span>右对齐</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-section half">
+                        <label class="form-label">文字颜色</label>
+                        <div class="color-picker-row">
+                            <input type="color" id="textColor" value="#1e3a5f" class="color-picker">
+                            <input type="text" id="textColorText" value="#1e3a5f" class="form-input color-text" placeholder="#1e3a5f">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-section half">
+                        <label class="form-label">标题字体大小</label>
+                        <div class="size-slider-row">
+                            <input type="range" id="titleSize" min="1.5" max="5" step="0.1" value="3" class="size-slider">
+                            <input type="text" id="titleSizeText" value="3rem" class="form-input size-text" readonly>
+                        </div>
+                    </div>
+                    <div class="form-section half">
+                        <label class="form-label">正文字体大小</label>
+                        <div class="size-slider-row">
+                            <input type="range" id="contentSize" min="0.9" max="2" step="0.05" value="1.2" class="size-slider">
+                            <input type="text" id="contentSizeText" value="1.2rem" class="form-input size-text" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <label class="form-label">背景遮罩透明度</label>
+                    <div class="size-slider-row">
+                        <input type="range" id="overlayOpacity" min="0" max="0.9" step="0.05" value="0.3" class="size-slider">
+                        <input type="text" id="overlayOpacityText" value="0.3" class="form-input size-text" readonly>
+                    </div>
+                    <p class="form-hint">0 = 完全透明，0.9 = 几乎不透明</p>
+                </div>
+            </div>
+
+            <!-- 富文本编辑工具栏 -->
+            <div class="form-section">
+                <label class="form-label">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    详细内容编辑
+                </label>
+                
+                <!-- 工具栏 -->
+                <div class="editor-toolbar">
+                    <div class="toolbar-group">
+                        <button type="button" class="toolbar-btn" onclick="formatText('bold')" title="加粗 (Ctrl+B)">
+                            <strong>B</strong>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="formatText('italic')" title="斜体 (Ctrl+I)">
+                            <em>I</em>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="formatText('underline')" title="下划线 (Ctrl+U)">
+                            <u>U</u>
+                        </button>
+                    </div>
+                    <div class="toolbar-divider"></div>
+                    <div class="toolbar-group">
+                        <label class="toolbar-btn color-btn" title="文字颜色">
+                            <span style="border-bottom: 3px solid #1e3a5f;">A</span>
+                            <input type="color" id="inlineColorPicker" value="#1e3a5f" class="hidden-color-input" onchange="applyInlineColor(this.value)">
+                        </label>
+                    </div>
+                    <div class="toolbar-divider"></div>
+                    <div class="toolbar-group quick-colors">
+                        <button type="button" class="quick-color" style="background: #ef4444;" onclick="applyInlineColor('#ef4444')" title="红色"></button>
+                        <button type="button" class="quick-color" style="background: #f97316;" onclick="applyInlineColor('#f97316')" title="橙色"></button>
+                        <button type="button" class="quick-color" style="background: #22c55e;" onclick="applyInlineColor('#22c55e')" title="绿色"></button>
+                        <button type="button" class="quick-color" style="background: #3b82f6;" onclick="applyInlineColor('#3b82f6')" title="蓝色"></button>
+                        <button type="button" class="quick-color" style="background: #8b5cf6;" onclick="applyInlineColor('#8b5cf6')" title="紫色"></button>
+                        <button type="button" class="quick-color" style="background: #1e3a5f;" onclick="applyInlineColor('#1e3a5f')" title="深蓝"></button>
+                    </div>
+                </div>
+                
+                <div class="content-editor" id="contentEditor" contenteditable="true" data-placeholder="输入知识详细内容，支持粘贴图片、拖拽图片、选中文本后点击颜色按钮改变颜色..."></div>
+                <p class="form-hint" style="margin-top: 0.5rem;">💡 小提示：选中文本后点击颜色按钮可改变文字颜色；支持 Ctrl+B/I/U 快捷键格式化</p>
+            </div>
+
+            <div class="form-section">
+                <label class="form-label">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    上传图片
+                </label>
+                <div class="image-upload-area" id="imageUploadArea">
+                    <div class="upload-placeholder" id="uploadPlaceholder">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <p>点击或拖拽上传图片</p>
+                        <span>支持 JPG、PNG 格式，可粘贴</span>
+                    </div>
+                    <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
+                </div>
+                <button type="button" class="url-add-btn" onclick="addImageByUrl()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                    </svg>
+                    通过链接添加图片
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <style>
+        .edit-page {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+        }
+
+        .edit-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(37, 99, 235, 0.08);
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: var(--bg-color);
+            color: var(--primary-color);
+        }
+
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .save-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .save-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        .edit-main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 7rem 2rem 4rem;
+        }
+
+        .edit-form {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .settings-group {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.08);
+        }
+
+        .settings-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--bg-color);
+        }
+
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .form-section.half {
+            flex: 1;
+        }
+
+        .form-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-hint {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .title-input {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 350px;
+            line-height: 1.8;
+        }
+
+        .content-editor {
+            min-height: 350px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            line-height: 1.8;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .content-editor:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .content-editor:empty:before {
+            content: attr(data-placeholder);
+            color: #aaa;
+            pointer-events: none;
+        }
+
+        .content-editor img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin: 1rem 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-editor p {
+            margin-bottom: 1rem;
+        }
+
+        .align-options {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .align-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .align-option:hover {
+            background: var(--bg-secondary);
+        }
+
+        .align-option input:checked + span {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .align-option input {
+            accent-color: var(--primary-color);
+        }
+
+        .color-picker-row {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .color-picker {
+            width: 50px;
+            height: 48px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .color-text {
+            flex: 1;
+            font-family: monospace;
+        }
+
+        .size-slider-row {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .size-slider {
+            flex: 1;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--bg-color);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .size-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .size-text {
+            width: 80px;
+            text-align: center;
+            font-family: monospace;
+        }
+
+        .image-upload-area {
+            position: relative;
+            border: 2px dashed var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .image-upload-area:hover {
+            border-color: var(--primary-color);
+            background: rgba(37, 99, 235, 0.03);
+        }
+
+        .upload-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .upload-placeholder svg {
+            color: var(--primary-color);
+            opacity: 0.6;
+        }
+
+        .upload-placeholder p {
+            font-size: 1rem;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        /* 封面图片上传区域 */
+        .cover-upload-area {
+            position: relative;
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .cover-upload-area:hover {
+            border-color: var(--primary-color);
+            background: rgba(37, 99, 235, 0.03);
+        }
+
+        .cover-upload-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .cover-upload-placeholder p {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .image-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .preview-item {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .preview-item:hover .preview-remove {
+            opacity: 1;
+        }
+
+        .insert-btn {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(37, 99, 235, 0.9);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .preview-item:hover .insert-btn {
+            opacity: 1;
+        }
+
+        .url-add-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            margin-top: 0.5rem;
+        }
+
+        .url-add-btn:hover {
+            border-color: var(--primary-color);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        /* 背景类型切换 */
+        .bg-type-toggle {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .bg-type-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.3s;
+        }
+
+        .bg-type-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .bg-type-btn.active {
+            background: rgba(37, 99, 235, 0.1);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* 富文本工具栏 */
+        .editor-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: #f8fafc;
+            border: 2px solid var(--border-color);
+            border-bottom: none;
+            border-radius: 12px 12px 0 0;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .toolbar-divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border-color);
+            margin: 0 0.5rem;
+        }
+
+        .toolbar-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            color: var(--text-primary);
+        }
+
+        .toolbar-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .color-btn {
+            position: relative;
+            width: auto;
+            padding: 0 0.75rem;
+        }
+
+        .hidden-color-input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .quick-colors {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .quick-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid white;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .quick-color:hover {
+            transform: scale(1.2);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .content-editor {
+            border-radius: 0 0 12px 12px !important;
+        }
+
+        .content-editor:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        /* 行政区划样式 */
+        .sub-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        #regionSection {
+            background: var(--bg-color);
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+        #regionSection .form-label {
+            margin-bottom: 1rem;
+        }
+
+        #regionSection .form-row {
+            margin-bottom: 0.5rem;
+        }
+
+        /* 可视化布局模式 */
+        .layout-mode-toggle {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .layout-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .layout-btn:hover {
+            border-color: var(--primary-color);
+        }
+
+        .layout-btn.active {
+            background: rgba(37, 99, 235, 0.1);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* 可拖拽文本块 */
+        .text-block {
+            position: absolute;
+            padding: 0.5rem;
+            cursor: move;
+            border: 2px dashed transparent;
+            border-radius: 8px;
+            min-width: 100px;
+            min-height: 40px;
+            user-select: none;
+            transition: border-color 0.2s;
+        }
+
+        .text-block:hover {
+            border-color: var(--primary-color);
+        }
+
+        .text-block.selected {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .text-block .block-content {
+            outline: none;
+            min-width: 50px;
+        }
+
+        .text-block .delete-block {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .text-block:hover .delete-block,
+        .text-block.selected .delete-block {
+            display: flex;
+        }
+
+        @media (max-width: 768px) {
+            .edit-header {
+                padding: 1rem 1.25rem;
+            }
+
+            .edit-main {
+                padding: 6rem 1.25rem 3rem;
+            }
+
+            .form-row {
+                flex-direction: column;
+            }
+
+            .align-options {
+                flex-wrap: wrap;
+            }
+
+            .size-slider-row {
+                flex-direction: column;
+            }
+
+            .size-text {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <script>
+        // 背景类型状态
+        let currentBgType = 'image';
+
+        // 省份数据
+        const provinceData = {
+            '北京': ['东城区', '西城区', '朝阳区', '丰台区', '石景山区', '海淀区', '门头沟区', '房山区', '通州区', '顺义区', '昌平区', '大兴区', '怀柔区', '平谷区', '密云区', '延庆区'],
+            '天津': ['和平区', '河东区', '河西区', '南开区', '河北区', '红桥区', '东丽区', '西青区', '津南区', '北辰区', '武清区', '宝坻区', '滨海新区', '宁河区', '静海区', '蓟州区'],
+            '河北': ['石家庄市', '唐山市', '秦皇岛市', '邯郸市', '邢台市', '保定市', '张家口市', '承德市', '沧州市', '廊坊市', '衡水市'],
+            '山西': ['太原市', '大同市', '阳泉市', '长治市', '晋城市', '朔州市', '晋中市', '运城市', '忻州市', '临汾市', '吕梁市'],
+            '内蒙古': ['呼和浩特市', '包头市', '乌海市', '赤峰市', '通辽市', '鄂尔多斯市', '呼伦贝尔市', '巴彦淖尔市', '乌兰察布市', '兴安盟', '锡林郭勒盟', '阿拉善盟'],
+            '辽宁': ['沈阳市', '大连市', '鞍山市', '抚顺市', '本溪市', '丹东市', '锦州市', '营口市', '阜新市', '辽阳市', '盘锦市', '铁岭市', '朝阳市', '葫芦岛市'],
+            '吉林': ['长春市', '吉林市', '四平市', '辽源市', '通化市', '白山市', '松原市', '白城市', '延边朝鲜族自治州'],
+            '黑龙江': ['哈尔滨市', '齐齐哈尔市', '鸡西市', '鹤岗市', '双鸭山市', '大庆市', '伊春市', '佳木斯市', '七台河市', '牡丹江市', '黑河市', '绥化市', '大兴安岭地区'],
+            '上海': ['黄浦区', '徐汇区', '长宁区', '静安区', '普陀区', '虹口区', '杨浦区', '闵行区', '宝山区', '嘉定区', '浦东新区', '金山区', '松江区', '青浦区', '奉贤区', '崇明区'],
+            '江苏': ['南京市', '无锡市', '徐州市', '常州市', '苏州市', '南通市', '连云港市', '淮安市', '盐城市', '扬州市', '镇江市', '泰州市', '宿迁市'],
+            '浙江': ['杭州市', '宁波市', '温州市', '嘉兴市', '湖州市', '绍兴市', '金华市', '衢州市', '舟山市', '台州市', '丽水市'],
+            '安徽': ['合肥市', '芜湖市', '蚌埠市', '淮南市', '马鞍山市', '淮北市', '铜陵市', '安庆市', '黄山市', '滁州市', '阜阳市', '宿州市', '六安市', '亳州市', '池州市', '宣城市'],
+            '福建': ['福州市', '厦门市', '莆田市', '三明市', '泉州市', '漳州市', '南平市', '龙岩市', '宁德市'],
+            '江西': ['南昌市', '景德镇市', '萍乡市', '九江市', '新余市', '鹰潭市', '赣州市', '吉安市', '宜春市', '抚州市', '上饶市'],
+            '山东': ['济南市', '青岛市', '淄博市', '枣庄市', '东营市', '烟台市', '潍坊市', '济宁市', '泰安市', '威海市', '日照市', '临沂市', '德州市', '聊城市', '滨州市', '菏泽市'],
+            '河南': ['郑州市', '开封市', '洛阳市', '平顶山市', '安阳市', '鹤壁市', '新乡市', '焦作市', '濮阳市', '许昌市', '漯河市', '三门峡市', '南阳市', '商丘市', '信阳市', '周口市', '驻马店市'],
+            '湖北': ['武汉市', '黄石市', '十堰市', '宜昌市', '襄阳市', '鄂州市', '荆门市', '孝感市', '荆州市', '黄冈市', '咸宁市', '随州市', '恩施土家族苗族自治州', '神农架林区'],
+            '湖南': ['长沙市', '株洲市', '湘潭市', '衡阳市', '邵阳市', '岳阳市', '常德市', '张家界市', '益阳市', '郴州市', '永州市', '怀化市', '娄底市', '湘西土家族苗族自治州'],
+            '广东': ['广州市', '韶关市', '深圳市', '珠海市', '汕头市', '佛山市', '江门市', '湛江市', '茂名市', '肇庆市', '惠州市', '梅州市', '汕尾市', '河源市', '阳江市', '清远市', '东莞市', '中山市', '潮州市', '揭阳市', '云浮市'],
+            '广西': ['南宁市', '柳州市', '桂林市', '梧州市', '北海市', '防城港市', '钦州市', '贵港市', '玉林市', '百色市', '贺州市', '河池市', '来宾市', '崇左市'],
+            '海南': ['海口市', '三亚市', '三沙市', '儋州市', '五指山市', '琼海市', '文昌市', '万宁市', '东方市'],
+            '重庆': ['万州区', '渝中区', '江北区', '沙坪坝区', '九龙坡区', '南岸区', '北碚区', '渝北区', '巴南区', '涪陵区', '长寿区', '璧山区', '开州区', '梁平区', '武隆区'],
+            '四川': ['成都市', '自贡市', '攀枝花市', '泸州市', '德阳市', '绵阳市', '广元市', '遂宁市', '内江市', '乐山市', '南充市', '眉山市', '宜宾市', '广安市', '达州市', '雅安市', '巴中市', '资阳市', '阿坝藏族羌族自治州', '甘孜藏族自治州', '凉山彝族自治州'],
+            '贵州': ['贵阳市', '六盘水市', '遵义市', '安顺市', '毕节市', '铜仁市', '黔西南布依族苗族自治州', '黔东南苗族侗族自治州', '黔南布依族苗族自治州'],
+            '云南': ['昆明市', '曲靖市', '玉溪市', '保山市', '昭通市', '丽江市', '普洱市', '临沧市', '楚雄彝族自治州', '红河哈尼族彝族自治州', '文山壮族苗族自治州', '西双版纳傣族自治州', '大理白族自治州', '德宏傣族景颇族自治州', '怒江傈僳族自治州', '迪庆藏族自治州'],
+            '西藏': ['拉萨市', '日喀则市', '昌都市', '林芝市', '山南市', '那曲市', '阿里地区'],
+            '陕西': ['西安市', '铜川市', '宝鸡市', '咸阳市', '渭南市', '延安市', '汉中市', '榆林市', '安康市', '商洛市'],
+            '甘肃': ['兰州市', '嘉峪关市', '金昌市', '白银市', '天水市', '武威市', '张掖市', '平凉市', '酒泉市', '庆阳市', '定西市', '陇南市', '临夏回族自治州', '甘南藏族自治州'],
+            '青海': ['西宁市', '海东市', '海北藏族自治州', '黄南藏族自治州', '海南藏族自治州', '果洛藏族自治州', '玉树藏族自治州', '海西蒙古族藏族自治州'],
+            '宁夏': ['银川市', '石嘴山市', '吴忠市', '固原市', '中卫市'],
+            '新疆': ['乌鲁木齐市', '克拉玛依市', '吐鲁番市', '哈密市', '昌吉回族自治州', '博尔塔拉蒙古自治州', '巴音郭楞蒙古自治州', '阿克苏地区', '克孜勒苏柯尔克孜自治州', '喀什地区', '和田地区', '伊犁哈萨克自治州', '塔城地区', '阿勒泰地区'],
+            '台湾': ['台北市', '新北市', '桃园市', '台中市', '台南市', '高雄市', '基隆市', '新竹市', '嘉义市']
+        };
+
+        function checkAdmin() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (!currentUser || currentUser.role !== 'admin') {
+                alert('只有管理员才能创建知识！');
+                window.location.href = 'index.html';
+                return false;
+            }
+            return true;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 初始化省份下拉框
+        function initProvinces() {
+            const provinceSelect = document.getElementById('province');
+            const provinces = Object.keys(provinceData).sort();
+            
+            provinces.forEach(province => {
+                const option = document.createElement('option');
+                option.value = province;
+                option.textContent = province;
+                provinceSelect.appendChild(option);
+            });
+
+            // 检查 URL 参数
+            const urlParams = new URLSearchParams(window.location.search);
+            const provinceParam = urlParams.get('province');
+            const cityParam = urlParams.get('city');
+            
+            if (provinceParam) {
+                provinceSelect.value = provinceParam;
+                updateCities();
+                
+                // 延迟设置城市（等待城市列表更新）
+                setTimeout(() => {
+                    const citySelect = document.getElementById('city');
+                    if (cityParam && provinceData[provinceParam] && provinceData[provinceParam].includes(cityParam)) {
+                        citySelect.value = cityParam;
+                    }
+                }, 100);
+            }
+        }
+
+        // 更新城市下拉框
+        function updateCities() {
+            const provinceSelect = document.getElementById('province');
+            const citySelect = document.getElementById('city');
+            const selectedProvince = provinceSelect.value;
+
+            // 清空城市列表
+            citySelect.innerHTML = '<option value="">选择城市</option>';
+
+            if (selectedProvince && provinceData[selectedProvince]) {
+                provinceData[selectedProvince].forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city;
+                    option.textContent = city;
+                    citySelect.appendChild(option);
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!checkAdmin()) return;
+            initFormControls();
+            initEditor();
+            initKeyboardShortcuts();
+            initProvinces();
+        });
+
+        function toggleBgType(type) {
+            currentBgType = type;
+            document.querySelectorAll('.bg-type-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.type === type);
+            });
+            document.getElementById('bgImageSection').style.display = type === 'image' ? 'flex' : 'none';
+            document.getElementById('bgVideoSection').style.display = type === 'video' ? 'flex' : 'none';
+        }
+
+        function initFormControls() {
+            // 颜色选择器同步
+            const colorPicker = document.getElementById('textColor');
+            const colorText = document.getElementById('textColorText');
+            colorPicker.addEventListener('input', () => {
+                colorText.value = colorPicker.value;
+            });
+            colorText.addEventListener('input', () => {
+                if (/^#[0-9A-Fa-f]{6}$/.test(colorText.value)) {
+                    colorPicker.value = colorText.value;
+                }
+            });
+
+            // 标题大小滑块
+            const titleSlider = document.getElementById('titleSize');
+            const titleSizeText = document.getElementById('titleSizeText');
+            titleSlider.addEventListener('input', () => {
+                titleSizeText.value = titleSlider.value + 'rem';
+            });
+
+            // 内容大小滑块
+            const contentSlider = document.getElementById('contentSize');
+            const contentSizeText = document.getElementById('contentSizeText');
+            contentSlider.addEventListener('input', () => {
+                contentSizeText.value = contentSlider.value + 'rem';
+            });
+
+            // 遮罩透明度滑块
+            const overlaySlider = document.getElementById('overlayOpacity');
+            const overlayText = document.getElementById('overlayOpacityText');
+            overlaySlider.addEventListener('input', () => {
+                overlayText.value = overlaySlider.value;
+            });
+        }
+
+        // 文本格式化功能
+        function formatText(command) {
+            document.execCommand(command, false, null);
+            document.getElementById('contentEditor').focus();
+        }
+
+        // 应用行内颜色
+        function applyInlineColor(color) {
+            const editor = document.getElementById('contentEditor');
+            editor.focus();
+            
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0 && selection.toString().length > 0) {
+                const range = selection.getRangeAt(0);
+                const span = document.createElement('span');
+                span.style.color = color;
+                try {
+                    range.surroundContents(span);
+                } catch (e) {
+                    // 如果跨多个元素，使用更复杂的方法
+                    const contents = range.extractContents();
+                    span.appendChild(contents);
+                    range.insertNode(span);
+                }
+            } else {
+                // 没有选中文本时，创建一个带颜色的空文本块
+                document.execCommand('foreColor', false, color);
+            }
+        }
+
+        // 键盘快捷键
+        function initKeyboardShortcuts() {
+            const editor = document.getElementById('contentEditor');
+            
+            editor.addEventListener('keydown', function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    switch(e.key.toLowerCase()) {
+                        case 'b':
+                            e.preventDefault();
+                            formatText('bold');
+                            break;
+                        case 'i':
+                            e.preventDefault();
+                            formatText('italic');
+                            break;
+                        case 'u':
+                            e.preventDefault();
+                            formatText('underline');
+                            break;
+                    }
+                }
+            });
+        }
+
+        function initEditor() {
+            const editor = document.getElementById('contentEditor');
+
+            // 监听粘贴事件，插入图片
+            editor.addEventListener('paste', function(e) {
+                const items = e.clipboardData.items;
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type.indexOf('image') !== -1) {
+                        e.preventDefault();
+                        const file = items[i].getAsFile();
+                        insertImageToEditor(file);
+                        return;
+                    }
+                }
+            });
+
+            // 拖拽图片到编辑器
+            editor.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                editor.style.borderColor = 'var(--primary-color)';
+                editor.style.background = 'rgba(37, 99, 235, 0.03)';
+            });
+
+            editor.addEventListener('dragleave', function() {
+                editor.style.borderColor = 'var(--border-color)';
+                editor.style.background = 'white';
+            });
+
+            editor.addEventListener('drop', function(e) {
+                e.preventDefault();
+                editor.style.borderColor = 'var(--border-color)';
+                editor.style.background = 'white';
+
+                const files = e.dataTransfer.files;
+                for (let i = 0; i < files.length; i++) {
+                    if (files[i].type.startsWith('image/')) {
+                        insertImageToEditor(files[i]);
+                    }
+                }
+            });
+        }
+
+        function insertImageToEditor(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const editor = document.getElementById('contentEditor');
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.maxWidth = '100%';
+
+                // 在光标位置插入图片
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    range.deleteContents();
+                    range.insertNode(img);
+                    range.collapse(false);
+                } else {
+                    editor.appendChild(img);
+                }
+
+                // 添加换行
+                const br = document.createElement('br');
+                editor.appendChild(br);
+                editor.focus();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function insertImageUrlToEditor(url) {
+            const editor = document.getElementById('contentEditor');
+            const img = document.createElement('img');
+            img.src = url;
+            img.style.maxWidth = '100%';
+
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                range.deleteContents();
+                range.insertNode(img);
+                range.collapse(false);
+            } else {
+                editor.appendChild(img);
+            }
+
+            const br = document.createElement('br');
+            editor.appendChild(br);
+            editor.focus();
+        }
+
+        const imageUploadArea = document.getElementById('imageUploadArea');
+        const imageInput = document.getElementById('imageInput');
+
+        imageUploadArea.addEventListener('click', () => imageInput.click());
+
+        imageUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            imageUploadArea.style.borderColor = 'var(--primary-color)';
+        });
+
+        imageUploadArea.addEventListener('dragleave', () => {
+            imageUploadArea.style.borderColor = 'var(--border-color)';
+        });
+
+        imageUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            imageUploadArea.style.borderColor = 'var(--border-color)';
+            handleFiles(e.dataTransfer.files);
+        });
+
+        imageInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        contentImages.push(e.target.result);
+                        renderImagePreview();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        function addImageByUrl() {
+            const url = prompt('请输入图片URL地址：');
+            if (url && url.trim()) {
+                insertImageUrlToEditor(url.trim());
+            }
+        }
+
+        // 处理封面图片上传
+        function handleCoverUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageData = e.target.result;
+                    document.getElementById('coverPreview').src = imageData;
+                    document.getElementById('coverPreview').style.display = 'block';
+                    document.getElementById('coverPlaceholder').style.display = 'none';
+                    document.getElementById('coverImage').value = imageData;
+                    document.getElementById('removeCoverBtn').style.display = 'inline-block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 删除封面图片
+        function removeCover() {
+            document.getElementById('coverPreview').src = '';
+            document.getElementById('coverPreview').style.display = 'none';
+            document.getElementById('coverPlaceholder').style.display = 'flex';
+            document.getElementById('coverImage').value = '';
+            document.getElementById('coverInput').value = '';
+            document.getElementById('removeCoverBtn').style.display = 'none';
+        }
+
+        function saveKnowledge() {
+            const form = document.getElementById('knowledgeForm');
+            const title = document.getElementById('title').value.trim();
+            const category = document.getElementById('category').value;
+            const summary = document.getElementById('summary').value.trim();
+            const coverImage = document.getElementById('coverImage').value;
+            const bgType = currentBgType;
+            const bgImage = document.getElementById('bgImage').value.trim();
+            const bgVideo = document.getElementById('bgVideo').value.trim();
+            const textAlign = document.querySelector('input[name="textAlign"]:checked').value;
+            const textColor = document.getElementById('textColor').value;
+            const titleSize = document.getElementById('titleSize').value;
+            const contentSize = document.getElementById('contentSize').value;
+            const overlayOpacity = document.getElementById('overlayOpacity').value;
+            
+            // 获取行政区划
+            const province = document.getElementById('province').value;
+            const city = document.getElementById('city').value;
+
+            // 从编辑器获取内容
+            const editor = document.getElementById('contentEditor');
+            const content = editor.innerHTML.trim();
+
+            if (!title || !category || !content) {
+                alert('请填写标题、分类和内容');
+                return;
+            }
+
+            const knowledgeData = JSON.parse(localStorage.getItem('geographyKnowledge') || '[]');
+
+            const newKnowledge = {
+                id: Date.now(),
+                title,
+                category,
+                summary,
+                coverImage: coverImage || '',
+                content: content,
+                date: new Date().toISOString().split('T')[0],
+                province: province || null,
+                city: city || null,
+                style: {
+                    bgType: bgType,
+                    bgImage: bgImage,
+                    bgVideo: bgVideo,
+                    textAlign: textAlign,
+                    textColor: textColor,
+                    titleSize: parseFloat(titleSize),
+                    contentSize: parseFloat(contentSize),
+                    overlayOpacity: parseFloat(overlayOpacity)
+                }
+            };
+
+            knowledgeData.unshift(newKnowledge);
+            localStorage.setItem('geographyKnowledge', JSON.stringify(knowledgeData));
+            alert('创建成功！');
+            window.location.href = 'knowledge.html?id=' + newKnowledge.id;
+        }
+    </script>
+</body>
+</html>

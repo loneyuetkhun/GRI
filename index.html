@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地理</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="landing.html" class="nav-brand">
+                <h1>地理知识库</h1>
+            </a>
+            <div class="nav-actions">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="搜索知识...">
+                    <button class="search-btn" onclick="searchKnowledge()">🔍</button>
+                </div>
+                <div class="user-info" id="userInfo">
+                    <!-- 动态显示 -->
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+        <div class="container">
+            <!-- 分类标签 -->
+            <div class="categories" id="categories">
+                <button class="category-btn active" data-category="all">全部</button>
+                <button class="category-btn" data-category="地形地貌">地形地貌</button>
+                <button class="category-btn" data-category="气候气象">气候气象</button>
+                <button class="category-btn" data-category="人文地理">人文地理</button>
+                <button class="category-btn" data-category="自然资源">自然资源</button>
+                <button class="category-btn" data-category="环境保护">环境保护</button>
+                <button class="category-btn" data-category="行政区划" onclick="window.location.href='map.html'">行政区划</button>
+            </div>
+
+            <!-- 知识卡片网格 -->
+            <div class="knowledge-grid" id="knowledgeGrid">
+            </div>
+
+            <!-- 空状态提示 -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-icon">📚</div>
+                <h3>暂无知识</h3>
+                <p>点击"创建知识"按钮开始添加地理知识</p>
+            </div>
+
+            <!-- 无搜索结果 -->
+            <div class="empty-state" id="noResults" style="display: none;">
+                <div class="empty-icon">🔍</div>
+                <h3>未找到相关知识</h3>
+                <p>尝试其他关键词或浏览全部知识</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <p>地理</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // 初始化用户信息显示
+        function initUserInfo() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            const userInfo = document.getElementById('userInfo');
+
+            if (!currentUser) {
+                window.location.href = 'landing.html';
+                return;
+            }
+
+            const isAdmin = currentUser.role === 'admin';
+
+            userInfo.innerHTML = `
+                ${isAdmin ? '<a href="create.html" class="btn btn-primary"><span>+</span> 创建知识</a>' : ''}
+                <div class="user-dropdown">
+                    <div class="user-avatar" onclick="toggleUserMenu()">
+                        ${isAdmin ? '👑' : '👤'}
+                    </div>
+                    <div class="user-menu" id="userMenu">
+                        <div class="user-menu-header">
+                            <span class="user-name">${currentUser.username}</span>
+                            <span class="user-role">${isAdmin ? '管理员' : '普通用户'}</span>
+                        </div>
+                        <div class="user-menu-divider"></div>
+                        <a href="#" class="user-menu-item" onclick="logout()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            退出登录
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenu');
+            menu.classList.toggle('show');
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'landing.html';
+        }
+
+        // 点击其他地方关闭菜单
+        document.addEventListener('click', function(e) {
+            const userDropdown = document.querySelector('.user-dropdown');
+            if (userDropdown && !userDropdown.contains(e.target)) {
+                const menu = document.getElementById('userMenu');
+                if (menu) menu.classList.remove('show');
+            }
+        });
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', initUserInfo);
+    </script>
+    <style>
+        .user-dropdown {
+            position: relative;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .user-avatar:hover {
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        .user-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            min-width: 180px;
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+            z-index: 200;
+        }
+
+        .user-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .user-menu-header {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .user-menu-divider {
+            height: 1px;
+            background: var(--bg-color);
+        }
+
+        .user-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.85rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .user-menu-item:hover {
+            background: var(--bg-color);
+            color: #ef4444;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+    </style>
+</body>
+</html>

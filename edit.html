@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑知识 - 地理知识库</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="edit-page">
+    <header class="edit-header">
+        <a href="javascript:history.back()" class="back-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            返回
+        </a>
+        <div class="header-title">编辑知识</div>
+        <button class="save-btn" onclick="saveKnowledge()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+            </svg>
+            保存
+        </button>
+    </header>
+
+    <main class="edit-main">
+        <form class="edit-form" id="knowledgeForm">
+            <input type="hidden" id="knowledgeId">
+
+            <div class="form-section">
+                <label class="form-label">标题</label>
+                <input type="text" id="title" class="form-input title-input" placeholder="输入知识标题" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-section half">
+                    <label class="form-label">分类</label>
+                    <select id="category" class="form-select" required>
+                        <option value="">选择分类</option>
+                        <option value="地形地貌">地形地貌</option>
+                        <option value="气候气象">气候气象</option>
+                        <option value="人文地理">人文地理</option>
+                        <option value="自然资源">自然资源</option>
+                        <option value="环境保护">环境保护</option>
+                    </select>
+                </div>
+                <div class="form-section half">
+                    <label class="form-label">简介</label>
+                    <input type="text" id="summary" class="form-input" placeholder="简短描述（可选）">
+                </div>
+            </div>
+
+            <!-- 页面设置 -->
+            <div class="settings-group">
+                <h3 class="settings-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    页面样式设置
+                </h3>
+
+                <div class="form-section">
+                    <label class="form-label">背景类型</label>
+                    <div class="bg-type-toggle">
+                        <button type="button" class="bg-type-btn" data-type="image" onclick="toggleBgType('image')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            静态图片
+                        </button>
+                        <button type="button" class="bg-type-btn" data-type="video" onclick="toggleBgType('video')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="5 3 19 12 5 21 5 3"/>
+                            </svg>
+                            动态视频
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-section" id="bgImageSection">
+                    <label class="form-label">背景图片 URL</label>
+                    <input type="text" id="bgImage" class="form-input" placeholder="输入背景图片URL（留空使用渐变背景）">
+                    <p class="form-hint">可使用网络图片地址，如 https://images.unsplash.com/...</p>
+                </div>
+
+                <div class="form-section" id="bgVideoSection" style="display: none;">
+                    <label class="form-label">背景视频 URL</label>
+                    <input type="text" id="bgVideo" class="form-input" placeholder="输入背景视频URL（建议使用MP4格式）">
+                    <p class="form-hint">视频将自动循环播放并静音</p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-section half">
+                        <label class="form-label">文字对齐</label>
+                        <div class="align-options">
+                            <label class="align-option">
+                                <input type="radio" name="textAlign" value="left">
+                                <span>左对齐</span>
+                            </label>
+                            <label class="align-option">
+                                <input type="radio" name="textAlign" value="center">
+                                <span>居中</span>
+                            </label>
+                            <label class="align-option">
+                                <input type="radio" name="textAlign" value="right">
+                                <span>右对齐</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-section half">
+                        <label class="form-label">文字颜色</label>
+                        <div class="color-picker-row">
+                            <input type="color" id="textColor" value="#1e3a5f" class="color-picker">
+                            <input type="text" id="textColorText" value="#1e3a5f" class="form-input color-text" placeholder="#1e3a5f">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-section half">
+                        <label class="form-label">标题字体大小</label>
+                        <div class="size-slider-row">
+                            <input type="range" id="titleSize" min="1.5" max="5" step="0.1" value="3" class="size-slider">
+                            <input type="text" id="titleSizeText" value="3rem" class="form-input size-text" readonly>
+                        </div>
+                    </div>
+                    <div class="form-section half">
+                        <label class="form-label">正文字体大小</label>
+                        <div class="size-slider-row">
+                            <input type="range" id="contentSize" min="0.9" max="2" step="0.05" value="1.2" class="size-slider">
+                            <input type="text" id="contentSizeText" value="1.2rem" class="form-input size-text" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <label class="form-label">背景遮罩透明度</label>
+                    <div class="size-slider-row">
+                        <input type="range" id="overlayOpacity" min="0" max="0.9" step="0.05" value="0.3" class="size-slider">
+                        <input type="text" id="overlayOpacityText" value="0.3" class="form-input size-text" readonly>
+                    </div>
+                    <p class="form-hint">0 = 完全透明，0.9 = 几乎不透明</p>
+                </div>
+            </div>
+
+            <!-- 富文本编辑工具栏 -->
+            <div class="form-section">
+                <label class="form-label">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    详细内容编辑
+                </label>
+                
+                <!-- 工具栏 -->
+                <div class="editor-toolbar">
+                    <div class="toolbar-group">
+                        <button type="button" class="toolbar-btn" onclick="formatText('bold')" title="加粗 (Ctrl+B)">
+                            <strong>B</strong>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="formatText('italic')" title="斜体 (Ctrl+I)">
+                            <em>I</em>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="formatText('underline')" title="下划线 (Ctrl+U)">
+                            <u>U</u>
+                        </button>
+                    </div>
+                    <div class="toolbar-divider"></div>
+                    <div class="toolbar-group">
+                        <label class="toolbar-btn color-btn" title="文字颜色">
+                            <span style="border-bottom: 3px solid #1e3a5f;">A</span>
+                            <input type="color" id="inlineColorPicker" value="#1e3a5f" class="hidden-color-input" onchange="applyInlineColor(this.value)">
+                        </label>
+                    </div>
+                    <div class="toolbar-divider"></div>
+                    <div class="toolbar-group quick-colors">
+                        <button type="button" class="quick-color" style="background: #ef4444;" onclick="applyInlineColor('#ef4444')" title="红色"></button>
+                        <button type="button" class="quick-color" style="background: #f97316;" onclick="applyInlineColor('#f97316')" title="橙色"></button>
+                        <button type="button" class="quick-color" style="background: #22c55e;" onclick="applyInlineColor('#22c55e')" title="绿色"></button>
+                        <button type="button" class="quick-color" style="background: #3b82f6;" onclick="applyInlineColor('#3b82f6')" title="蓝色"></button>
+                        <button type="button" class="quick-color" style="background: #8b5cf6;" onclick="applyInlineColor('#8b5cf6')" title="紫色"></button>
+                        <button type="button" class="quick-color" style="background: #1e3a5f;" onclick="applyInlineColor('#1e3a5f')" title="深蓝"></button>
+                    </div>
+                </div>
+                
+                <div class="content-editor" id="contentEditor" contenteditable="true" data-placeholder="输入知识详细内容，支持粘贴图片、拖拽图片、选中文本后点击颜色按钮改变颜色..."></div>
+                <p class="form-hint" style="margin-top: 0.5rem;">💡 小提示：选中文本后点击颜色按钮可改变文字颜色；支持 Ctrl+B/I/U 快捷键格式化</p>
+            </div>
+
+            <div class="form-section">
+                <label class="form-label">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    上传图片
+                </label>
+                <div class="image-upload-area" id="imageUploadArea">
+                    <div class="upload-placeholder" id="uploadPlaceholder">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <p>点击或拖拽上传图片</p>
+                        <span>支持 JPG、PNG 格式，可粘贴</span>
+                    </div>
+                    <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
+                </div>
+                <button type="button" class="url-add-btn" onclick="addImageByUrl()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                    </svg>
+                    通过链接添加图片
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <style>
+        .edit-page {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+        }
+
+        .edit-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(37, 99, 235, 0.08);
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: var(--bg-color);
+            color: var(--primary-color);
+        }
+
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .save-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .save-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        .edit-main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 7rem 2rem 4rem;
+        }
+
+        .edit-form {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .settings-group {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.08);
+        }
+
+        .settings-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--bg-color);
+        }
+
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .form-section.half {
+            flex: 1;
+        }
+
+        .form-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-hint {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .title-input {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 350px;
+            line-height: 1.8;
+        }
+
+        .content-editor {
+            min-height: 350px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            line-height: 1.8;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .content-editor:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .content-editor:empty:before {
+            content: attr(data-placeholder);
+            color: #aaa;
+            pointer-events: none;
+        }
+
+        .content-editor img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin: 1rem 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-editor p {
+            margin-bottom: 1rem;
+        }
+
+        .align-options {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .align-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .align-option:hover {
+            background: var(--bg-secondary);
+        }
+
+        .align-option input:checked + span {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .align-option input {
+            accent-color: var(--primary-color);
+        }
+
+        .color-picker-row {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .color-picker {
+            width: 50px;
+            height: 48px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .color-text {
+            flex: 1;
+            font-family: monospace;
+        }
+
+        .size-slider-row {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .size-slider {
+            flex: 1;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--bg-color);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .size-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .size-text {
+            width: 80px;
+            text-align: center;
+            font-family: monospace;
+        }
+
+        .image-upload-area {
+            position: relative;
+            border: 2px dashed var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .image-upload-area:hover {
+            border-color: var(--primary-color);
+            background: rgba(37, 99, 235, 0.03);
+        }
+
+        .upload-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .upload-placeholder svg {
+            color: var(--primary-color);
+            opacity: 0.6;
+        }
+
+        .image-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .preview-item {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .preview-item:hover .preview-remove {
+            opacity: 1;
+        }
+
+        .insert-btn {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(37, 99, 235, 0.9);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .preview-item:hover .insert-btn {
+            opacity: 1;
+        }
+
+        .url-add-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            margin-top: 0.5rem;
+        }
+
+        .url-add-btn:hover {
+            border-color: var(--primary-color);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        /* 背景类型切换 */
+        .bg-type-toggle {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .bg-type-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.3s;
+        }
+
+        .bg-type-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .bg-type-btn.active {
+            background: rgba(37, 99, 235, 0.1);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* 富文本工具栏 */
+        .editor-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: #f8fafc;
+            border: 2px solid var(--border-color);
+            border-bottom: none;
+            border-radius: 12px 12px 0 0;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .toolbar-divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border-color);
+            margin: 0 0.5rem;
+        }
+
+        .toolbar-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            color: var(--text-primary);
+        }
+
+        .toolbar-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .color-btn {
+            position: relative;
+            width: auto;
+            padding: 0 0.75rem;
+        }
+
+        .hidden-color-input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .quick-colors {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .quick-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid white;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .quick-color:hover {
+            transform: scale(1.2);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .content-editor {
+            border-radius: 0 0 12px 12px !important;
+        }
+
+        .content-editor:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .edit-header {
+                padding: 1rem 1.25rem;
+            }
+
+            .edit-main {
+                padding: 6rem 1.25rem 3rem;
+            }
+
+            .form-row {
+                flex-direction: column;
+            }
+
+            .align-options {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+
+    <script>
+        // 背景类型状态
+        let currentBgType = 'image';
+
+        function checkAdmin() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (!currentUser || currentUser.role !== 'admin') {
+                alert('只有管理员才能编辑知识！');
+                window.location.href = 'index.html';
+                return false;
+            }
+            return true;
+        }
+
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!checkAdmin()) return;
+            loadKnowledgeForEdit();
+            initFormControls();
+            initEditor();
+            initKeyboardShortcuts();
+        });
+
+        function toggleBgType(type) {
+            currentBgType = type;
+            document.querySelectorAll('.bg-type-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.type === type);
+            });
+            document.getElementById('bgImageSection').style.display = type === 'image' ? 'flex' : 'none';
+            document.getElementById('bgVideoSection').style.display = type === 'video' ? 'flex' : 'none';
+        }
+
+        function initFormControls() {
+            const colorPicker = document.getElementById('textColor');
+            const colorText = document.getElementById('textColorText');
+            colorPicker.addEventListener('input', () => {
+                colorText.value = colorPicker.value;
+            });
+            colorText.addEventListener('input', () => {
+                if (/^#[0-9A-Fa-f]{6}$/.test(colorText.value)) {
+                    colorPicker.value = colorText.value;
+                }
+            });
+
+            const titleSlider = document.getElementById('titleSize');
+            const titleSizeText = document.getElementById('titleSizeText');
+            titleSlider.addEventListener('input', () => {
+                titleSizeText.value = titleSlider.value + 'rem';
+            });
+
+            const contentSlider = document.getElementById('contentSize');
+            const contentSizeText = document.getElementById('contentSizeText');
+            contentSlider.addEventListener('input', () => {
+                contentSizeText.value = contentSlider.value + 'rem';
+            });
+
+            const overlaySlider = document.getElementById('overlayOpacity');
+            const overlayText = document.getElementById('overlayOpacityText');
+            overlaySlider.addEventListener('input', () => {
+                overlayText.value = overlaySlider.value;
+            });
+        }
+
+        // 文本格式化功能
+        function formatText(command) {
+            document.execCommand(command, false, null);
+            document.getElementById('contentEditor').focus();
+        }
+
+        // 应用行内颜色
+        function applyInlineColor(color) {
+            const editor = document.getElementById('contentEditor');
+            editor.focus();
+            
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0 && selection.toString().length > 0) {
+                const range = selection.getRangeAt(0);
+                const span = document.createElement('span');
+                span.style.color = color;
+                try {
+                    range.surroundContents(span);
+                } catch (e) {
+                    const contents = range.extractContents();
+                    span.appendChild(contents);
+                    range.insertNode(span);
+                }
+            } else {
+                document.execCommand('foreColor', false, color);
+            }
+        }
+
+        // 键盘快捷键
+        function initKeyboardShortcuts() {
+            const editor = document.getElementById('contentEditor');
+            
+            editor.addEventListener('keydown', function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    switch(e.key.toLowerCase()) {
+                        case 'b':
+                            e.preventDefault();
+                            formatText('bold');
+                            break;
+                        case 'i':
+                            e.preventDefault();
+                            formatText('italic');
+                            break;
+                        case 'u':
+                            e.preventDefault();
+                            formatText('underline');
+                            break;
+                    }
+                }
+            });
+        }
+
+        function initEditor() {
+            const editor = document.getElementById('contentEditor');
+
+            editor.addEventListener('paste', function(e) {
+                const items = e.clipboardData.items;
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type.indexOf('image') !== -1) {
+                        e.preventDefault();
+                        const file = items[i].getAsFile();
+                        insertImageToEditor(file);
+                        return;
+                    }
+                }
+            });
+
+            editor.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                editor.style.borderColor = 'var(--primary-color)';
+                editor.style.background = 'rgba(37, 99, 235, 0.03)';
+            });
+
+            editor.addEventListener('dragleave', function() {
+                editor.style.borderColor = 'var(--border-color)';
+                editor.style.background = 'white';
+            });
+
+            editor.addEventListener('drop', function(e) {
+                e.preventDefault();
+                editor.style.borderColor = 'var(--border-color)';
+                editor.style.background = 'white';
+
+                const files = e.dataTransfer.files;
+                for (let i = 0; i < files.length; i++) {
+                    if (files[i].type.startsWith('image/')) {
+                        insertImageToEditor(files[i]);
+                    }
+                }
+            });
+        }
+
+        function insertImageToEditor(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const editor = document.getElementById('contentEditor');
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.maxWidth = '100%';
+
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    range.deleteContents();
+                    range.insertNode(img);
+                    range.collapse(false);
+                } else {
+                    editor.appendChild(img);
+                }
+
+                const br = document.createElement('br');
+                editor.appendChild(br);
+                editor.focus();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function insertImageUrlToEditor(url) {
+            const editor = document.getElementById('contentEditor');
+            const img = document.createElement('img');
+            img.src = url;
+            img.style.maxWidth = '100%';
+
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                range.deleteContents();
+                range.insertNode(img);
+                range.collapse(false);
+            } else {
+                editor.appendChild(img);
+            }
+
+            const br = document.createElement('br');
+            editor.appendChild(br);
+            editor.focus();
+        }
+
+        function loadKnowledgeForEdit() {
+            const id = parseInt(getQueryParam('id'));
+            if (!id) {
+                alert('未指定要编辑的知识');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const knowledgeData = JSON.parse(localStorage.getItem('geographyKnowledge') || '[]');
+            const knowledge = knowledgeData.find(item => item.id === id);
+
+            if (!knowledge) {
+                alert('未找到该知识');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('knowledgeId').value = knowledge.id;
+            document.getElementById('title').value = knowledge.title;
+            document.getElementById('category').value = knowledge.category;
+            document.getElementById('summary').value = knowledge.summary || '';
+
+            // 设置编辑器内容（包含HTML）
+            document.getElementById('contentEditor').innerHTML = knowledge.content || '';
+
+            // 加载样式设置
+            const style = knowledge.style || {};
+            const bgType = style.bgType || 'image';
+            currentBgType = bgType;
+            
+            // 设置背景类型切换按钮状态
+            document.querySelectorAll('.bg-type-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.type === bgType);
+            });
+            document.getElementById('bgImageSection').style.display = bgType === 'image' ? 'flex' : 'none';
+            document.getElementById('bgVideoSection').style.display = bgType === 'video' ? 'flex' : 'none';
+            
+            document.getElementById('bgImage').value = style.bgImage || '';
+            document.getElementById('bgVideo').value = style.bgVideo || '';
+            document.querySelector(`input[name="textAlign"][value="${style.textAlign || 'center'}"]`).checked = true;
+            document.getElementById('textColor').value = style.textColor || '#1e3a5f';
+            document.getElementById('textColorText').value = style.textColor || '#1e3a5f';
+            document.getElementById('titleSize').value = style.titleSize || 3;
+            document.getElementById('titleSizeText').value = (style.titleSize || 3) + 'rem';
+            document.getElementById('contentSize').value = style.contentSize || 1.2;
+            document.getElementById('contentSizeText').value = (style.contentSize || 1.2) + 'rem';
+            document.getElementById('overlayOpacity').value = style.overlayOpacity ?? 0.3;
+            document.getElementById('overlayOpacityText').value = style.overlayOpacity ?? 0.3;
+
+            document.title = `编辑 "${knowledge.title}" - 地理知识库`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        const imageUploadArea = document.getElementById('imageUploadArea');
+        const imageInput = document.getElementById('imageInput');
+
+        imageUploadArea.addEventListener('click', () => imageInput.click());
+
+        imageUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            imageUploadArea.style.borderColor = 'var(--primary-color)';
+        });
+
+        imageUploadArea.addEventListener('dragleave', () => {
+            imageUploadArea.style.borderColor = 'var(--border-color)';
+        });
+
+        imageUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            imageUploadArea.style.borderColor = 'var(--border-color)';
+            handleFiles(e.dataTransfer.files);
+        });
+
+        imageInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        contentImages.push(e.target.result);
+                        renderImagePreview();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        function addImageByUrl() {
+            const url = prompt('请输入图片URL地址：');
+            if (url && url.trim()) {
+                insertImageUrlToEditor(url.trim());
+            }
+        }
+
+        function saveKnowledge() {
+            const id = parseInt(document.getElementById('knowledgeId').value);
+            const title = document.getElementById('title').value.trim();
+            const category = document.getElementById('category').value;
+            const summary = document.getElementById('summary').value.trim();
+            const bgType = currentBgType;
+            const bgImage = document.getElementById('bgImage').value.trim();
+            const bgVideo = document.getElementById('bgVideo').value.trim();
+            const textAlign = document.querySelector('input[name="textAlign"]:checked').value;
+            const textColor = document.getElementById('textColor').value;
+            const titleSize = document.getElementById('titleSize').value;
+            const contentSize = document.getElementById('contentSize').value;
+            const overlayOpacity = document.getElementById('overlayOpacity').value;
+
+            // 从编辑器获取内容
+            const editor = document.getElementById('contentEditor');
+            const content = editor.innerHTML.trim();
+
+            if (!title || !category || !content) {
+                alert('请填写标题、分类和内容');
+                return;
+            }
+
+            let knowledgeData = JSON.parse(localStorage.getItem('geographyKnowledge') || '[]');
+            const index = knowledgeData.findIndex(item => item.id === id);
+
+            if (index !== -1) {
+                knowledgeData[index] = {
+                    ...knowledgeData[index],
+                    title,
+                    category,
+                    summary,
+                    content: content,
+                    style: {
+                        bgType: bgType,
+                        bgImage: bgImage,
+                        bgVideo: bgVideo,
+                        textAlign: textAlign,
+                        textColor: textColor,
+                        titleSize: parseFloat(titleSize),
+                        contentSize: parseFloat(contentSize),
+                        overlayOpacity: parseFloat(overlayOpacity)
+                    }
+                };
+                localStorage.setItem('geographyKnowledge', JSON.stringify(knowledgeData));
+                alert('保存成功！');
+                window.location.href = 'knowledge.html?id=' + id;
+            }
+        }
+    </script>
+</body>
+</html>

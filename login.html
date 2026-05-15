@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 地理知识库</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e8f4fd 0%, #f0f9ff 50%, #e0f2fe 100%);
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 900px;
+            padding: 2rem;
+        }
+
+        /* 网站介绍区域 */
+        .intro-section {
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .intro-section h1 {
+            font-size: 2.5rem;
+            color: #1e3a5f;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .intro-section .intro-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+
+        .intro-section p {
+            color: #475569;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            max-width: 600px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .intro-features {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .intro-feature {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .intro-feature span {
+            font-size: 1.3rem;
+        }
+
+        .login-container-main {
+            display: flex;
+            gap: 3rem;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .login-side {
+            flex: 1;
+            max-width: 420px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(37, 99, 235, 0.15);
+            animation: fadeInUp 0.6s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .logo h1 {
+            font-size: 1.75rem;
+            color: #1e3a5f;
+            font-weight: 700;
+        }
+
+        .logo p {
+            color: #64748b;
+            margin-top: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #1e3a5f;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid #bfdbfe;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #64748b;
+        }
+
+        .form-footer a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .error-msg {
+            color: #ef4444;
+            text-align: center;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: #fef2f2;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .demo-info {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #f0f9ff;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .demo-info h4 {
+            color: #1e3a5f;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .demo-info p {
+            color: #64748b;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .demo-info code {
+            background: #e0f2fe;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <!-- 网站介绍 -->
+        <div class="intro-section">
+            <div class="intro-icon">🌍</div>
+            <h1>地理知识库</h1>
+            <p>欢迎来到地理知识库！这是一个探索世界、分享地理知识的平台。在这里，你可以浏览各省市的地理信息，了解中国各地区的特色与风貌。登录后即可开始你的地理探索之旅！</p>
+            <div class="intro-features">
+                <div class="intro-feature"><span>📚</span> 丰富的地理知识</div>
+                <div class="intro-feature"><span>🗺️</span> 详细的地区信息</div>
+                <div class="intro-feature"><span>✏️</span> 自由编辑内容</div>
+            </div>
+        </div>
+
+        <div class="login-container-main">
+            <div class="login-side">
+                <div class="login-card">
+                    <div class="logo">
+                        <div class="logo-icon">🌍</div>
+                        <h1>登录</h1>
+                        <p>探索世界，分享知识</p>
+                    </div>
+
+                    <div class="error-msg" id="errorMsg"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input type="text" id="username" placeholder="请输入用户名" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" placeholder="请输入密码" required>
+                </div>
+                <button type="submit" class="btn-login">登录</button>
+            </form>
+
+            <div class="form-footer">
+                还没有账号？<a href="register.html">立即注册</a>
+            </div>
+
+            <div class="demo-info">
+                <h4>👤 管理员账号</h4>
+                <p>
+                    用户名: <code>admin</code><br>
+                    密码: <code>admin123</code>
+                </p>
+            </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 管理员账号配置
+        const ADMIN_USERNAME = 'admin';
+        const ADMIN_PASSWORD = 'admin123';
+
+        // 如果已登录，直接跳转
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMsg');
+
+            // 检查管理员账号
+            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+                const user = {
+                    username: username,
+                    role: 'admin',
+                    loginTime: new Date().toISOString()
+                };
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // 检查普通用户
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                const loginUser = {
+                    username: user.username,
+                    role: 'user',
+                    loginTime: new Date().toISOString()
+                };
+                localStorage.setItem('currentUser', JSON.stringify(loginUser));
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // 登录失败
+            errorMsg.textContent = '用户名或密码错误';
+            errorMsg.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
